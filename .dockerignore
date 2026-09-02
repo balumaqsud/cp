@@ -1,0 +1,9 @@
+.git
+.github
+tests
+var
+vendor
+.env.local
+.env.*.local
+compose.yaml
+compose.override.yaml

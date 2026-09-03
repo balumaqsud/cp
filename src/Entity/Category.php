@@ -16,37 +16,48 @@ class Category
     #[ORM\Column(length: 255, unique: true)]
     private string $name;
 
-    #[ORM\Column(length:50, nullable: false)]
+    #[ORM\Column(length: 50, nullable: false)]
     private string $color;
 
-     #[ORM\Column]
+    #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    public function __construct()
+    {
+        $this->createdAt = new \DateTimeImmutable();
+    }
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): string {
-       return $this->name;
+    public function getName(): string
+    {
+        return $this->name;
     }
 
-    public function setName(string $name): static {
+    public function setName(string $name): static
+    {
         $this->name = $name;
+
         return $this;
     }
-     public function getColor(): string {
-       return $this->name;
+
+    public function getColor(): string
+    {
+        return $this->color;
     }
 
-
-    public function setColor(string $color): static {
+    public function setColor(string $color): static
+    {
         $this->color = $color;
+
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeImmutable {
+    public function getCreatedAt(): ?\DateTimeImmutable
+    {
         return $this->createdAt;
     }
 

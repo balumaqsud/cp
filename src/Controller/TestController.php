@@ -10,7 +10,9 @@ class TestController extends AbstractController {
 
     #[Route('/test')]
     public function index(): Response
+
     {
-        return new Response('test controller');
+        $contents = $this->renderView('test/test.html.twig');
+        return new Response($contents);
     }
 }

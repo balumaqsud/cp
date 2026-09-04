@@ -5,4 +5,11 @@
 {% block body %}
     <h1>Course project</h1>
     <p>App is running.</p>
+
+    {% if app.user %}
+        <p>Signed in as {{ app.user.userIdentifier }}.</p>
+        <p><a href="{{ path('app_logout') }}">Log out</a></p>
+    {% else %}
+        <p><a href="{{ path('app_login') }}">Log in</a></p>
+    {% endif %}
 {% endblock %}

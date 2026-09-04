@@ -3,8 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\ProjectRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use App\Entity\User;
 
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
@@ -19,7 +21,7 @@ class Project
   #[ORM\Column(length: 255)]
     private string $name;
 
-    #[ORM\Column(type:'text', nullable: true)]
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column]
@@ -28,13 +30,21 @@ class Project
      #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'projects')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $owner = null;
+
+    /**
+     * @var Collection<int, Task>
+     */
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'project')]
+    private Collection $tasks;
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
+        $this->tasks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -46,7 +56,7 @@ class Project
         return $this->name;
     }
     public function setName(string $name): static {
-        $this-> name = $name;
+        $this->name = $name;
         return $this;
     }
     public function getDescription() {
@@ -77,8 +87,35 @@ class Project
     public function getOwner(): ?User {
         return $this->owner;
     }
-    public function setOwner(?User $owner) : static {
-        $this->owner - $owner;
+    public function setOwner(User $owner): static
+    {
+        $this->owner = $owner;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getTasks(): Collection
+    {
+        return $this->tasks;
+    }
+
+    public function addTask(Task $task): static
+    {
+        if (!$this->tasks->contains($task)) {
+            $this->tasks->add($task);
+            $task->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTask(Task $task): static
+    {
+        $this->tasks->removeElement($task);
+
         return $this;
     }
 }

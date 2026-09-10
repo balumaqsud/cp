@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\CommentRepository;
+use App\Repository\DiscussionPostRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: CommentRepository::class)]
-#[ORM\Table(name: 'comments')]
-class Comment
+#[ORM\Entity(repositoryClass: DiscussionPostRepository::class)]
+#[ORM\Table(name: 'discussion_posts')]
+class DiscussionPost
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -21,11 +21,11 @@ class Comment
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\ManyToOne(inversedBy: 'discussionPosts')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Task $task = null;
+    private ?Position $position = null;
 
-    #[ORM\ManyToOne(inversedBy: 'comments')]
+    #[ORM\ManyToOne(inversedBy: 'discussionPosts')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $author = null;
 
@@ -56,21 +56,14 @@ class Comment
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    public function getPosition(): ?Position
     {
-        $this->createdAt = $createdAt;
-
-        return $this;
+        return $this->position;
     }
 
-    public function getTask(): ?Task
+    public function setPosition(Position $position): static
     {
-        return $this->task;
-    }
-
-    public function setTask(Task $task): static
-    {
-        $this->task = $task;
+        $this->position = $position;
 
         return $this;
     }

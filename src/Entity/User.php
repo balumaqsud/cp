@@ -43,23 +43,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $projects;
 
     /**
-     * @var Collection<int, Task>
+     * @var Collection<int, DiscussionPost>
      */
-    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignedTo')]
-    private Collection $assignedTasks;
-
-    /**
-     * @var Collection<int, Comment>
-     */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'author')]
-    private Collection $comments;
+    #[ORM\OneToMany(targetEntity: DiscussionPost::class, mappedBy: 'author')]
+    private Collection $discussionPosts;
 
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->projects = new ArrayCollection();
-        $this->assignedTasks = new ArrayCollection();
-        $this->comments = new ArrayCollection();
+        $this->discussionPosts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -177,53 +170,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Task>
+     * @return Collection<int, DiscussionPost>
      */
-    public function getAssignedTasks(): Collection
+    public function getDiscussionPosts(): Collection
     {
-        return $this->assignedTasks;
+        return $this->discussionPosts;
     }
 
-    public function addAssignedTask(Task $task): static
+    public function addDiscussionPost(DiscussionPost $discussionPost): static
     {
-        if (!$this->assignedTasks->contains($task)) {
-            $this->assignedTasks->add($task);
-            $task->setAssignedTo($this);
+        if (!$this->discussionPosts->contains($discussionPost)) {
+            $this->discussionPosts->add($discussionPost);
+            $discussionPost->setAuthor($this);
         }
 
         return $this;
     }
 
-    public function removeAssignedTask(Task $task): static
+    public function removeDiscussionPost(DiscussionPost $discussionPost): static
     {
-        if ($this->assignedTasks->removeElement($task) && $task->getAssignedTo() === $this) {
-            $task->setAssignedTo(null);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Comment>
-     */
-    public function getComments(): Collection
-    {
-        return $this->comments;
-    }
-
-    public function addComment(Comment $comment): static
-    {
-        if (!$this->comments->contains($comment)) {
-            $this->comments->add($comment);
-            $comment->setAuthor($this);
-        }
-
-        return $this;
-    }
-
-    public function removeComment(Comment $comment): static
-    {
-        $this->comments->removeElement($comment);
+        $this->discussionPosts->removeElement($discussionPost);
 
         return $this;
     }

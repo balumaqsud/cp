@@ -22,4 +22,5 @@ class SecurityController extends AbstractController
             'error'=> $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
+
 }

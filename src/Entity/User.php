@@ -164,7 +164,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeProject(Project $project): static
     {
-        $this->projects->removeElement($project);
+        if ($this->projects->removeElement($project) && $project->getOwner() === $this) {
+            $project->setOwner(null);
+        }
 
         return $this;
     }
@@ -189,7 +191,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeDiscussionPost(DiscussionPost $discussionPost): static
     {
-        $this->discussionPosts->removeElement($discussionPost);
+        if ($this->discussionPosts->removeElement($discussionPost) && $discussionPost->getAuthor() === $this) {
+            $discussionPost->setAuthor(null);
+        }
 
         return $this;
     }

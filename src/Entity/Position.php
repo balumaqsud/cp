@@ -107,7 +107,9 @@ class Position
 
     public function removeDiscussionPost(DiscussionPost $discussionPost): static
     {
-        $this->discussionPosts->removeElement($discussionPost);
+        if ($this->discussionPosts->removeElement($discussionPost) && $discussionPost->getPosition() === $this) {
+            $discussionPost->setPosition(null);
+        }
 
         return $this;
     }

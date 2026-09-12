@@ -19,7 +19,7 @@ class Project
     private string $name;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE)]
-    private ?\DateTimeImmutable $startDate = null;
+    private \DateTimeImmutable $startDate;
 
     #[ORM\Column(type: Types::DATE_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $endDate = null; // null = ongoing
@@ -52,7 +52,7 @@ class Project
     public function getName(): string { return $this->name; }
     public function setName(string $name): static { $this->name = $name; return $this; }
 
-    public function getStartDate(): ?\DateTimeImmutable { return $this->startDate; }
+    public function getStartDate(): \DateTimeImmutable { return $this->startDate; }
     public function setStartDate(\DateTimeImmutable $startDate): static { $this->startDate = $startDate; return $this; }
 
     public function getEndDate(): ?\DateTimeImmutable { return $this->endDate; }
@@ -72,7 +72,7 @@ class Project
     }
 
     public function getOwner(): ?User { return $this->owner; }
-    public function setOwner(User $owner): static { $this->owner = $owner; return $this; }
+    public function setOwner(?User $owner): static { $this->owner = $owner; return $this; }
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
     public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }

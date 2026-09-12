@@ -61,7 +61,7 @@ class DiscussionPost
         return $this->position;
     }
 
-    public function setPosition(Position $position): static
+    public function setPosition(?Position $position): static
     {
         $this->position = $position;
 
@@ -73,7 +73,7 @@ class DiscussionPost
         return $this->author;
     }
 
-    public function setAuthor(User $author): static
+    public function setAuthor(?User $author): static
     {
         $this->author = $author;
 

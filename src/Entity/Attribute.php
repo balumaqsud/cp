@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\AttributeRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -39,12 +41,53 @@ class Attribute
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true)]
     private ?Category $category = null;
 
-    public function getCategory() : ?Category {
+    /**
+     * @var Collection<int, AttributeValue>
+     */
+    #[ORM\OneToMany(mappedBy: 'attribute', targetEntity: AttributeValue::class)]
+    private Collection $attributeValues;
+
+    public function __construct()
+    {
+        $this->attributeValues = new ArrayCollection();
+    }
+
+    public function getCategory(): ?Category
+    {
         return $this->category;
     }
 
-    public function setCategory(?Category $category): static {
+    public function setCategory(?Category $category): static
+    {
         $this->category = $category;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AttributeValue>
+     */
+    public function getAttributeValues(): Collection
+    {
+        return $this->attributeValues;
+    }
+
+    public function addAttributeValue(AttributeValue $attributeValue): static
+    {
+        if (!$this->attributeValues->contains($attributeValue)) {
+            $this->attributeValues->add($attributeValue);
+            $attributeValue->setAttribute($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttributeValue(AttributeValue $attributeValue): static
+    {
+        if ($this->attributeValues->removeElement($attributeValue) && $attributeValue->getAttribute() === $this) {
+            $attributeValue->setAttribute(null);
+        }
+
         return $this;
     }
 

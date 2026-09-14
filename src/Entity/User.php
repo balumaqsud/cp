@@ -50,11 +50,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: DiscussionPost::class, mappedBy: 'author')]
     private Collection $discussionPosts;
 
+    /**
+     * @var Collection<int, AttributeValue>
+     */
+    #[ORM\OneToMany(targetEntity: AttributeValue::class, mappedBy: 'user')]
+    private Collection $attributeValues;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->projects = new ArrayCollection();
         $this->discussionPosts = new ArrayCollection();
+        $this->attributeValues = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -197,6 +204,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             $discussionPost->setAuthor(null);
         }
 
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AttributeValue>
+     */
+    public function getAttributeValues(): Collection
+    {
+        return $this->attributeValues;
+    }
+
+    public function addAttributeValue(AttributeValue $attributeValue): static
+    {
+        if (!$this->attributeValues->contains($attributeValue)) {
+            $this->attributeValues->add($attributeValue);
+            $attributeValue->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttributeValue(AttributeValue $attributeValue): static
+    {
+        if ($this->attributeValues->removeElement($attributeValue) && $attributeValue->getUser() === $this) {
+            $attributeValue->setUser(null);
+        }
         return $this;
     }
 }

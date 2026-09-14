@@ -17,4 +17,12 @@ class PositionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Position::class);
     }
+
+    /**
+     * @return list<Position>
+     */
+    public function findPublic(): array
+    {
+        return $this->findBy(['isPublic' => true], ['title' => 'ASC']);
+    }
 }

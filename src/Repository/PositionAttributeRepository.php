@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use App\Entity\DiscussionPost;
 use App\Entity\Position;
+use App\Entity\PositionAttribute;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<DiscussionPost>
+ * @extends ServiceEntityRepository<PositionAttribute>
  */
-class DiscussionPostRepository extends ServiceEntityRepository
+class PositionAttributeRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, DiscussionPost::class);
+        parent::__construct($registry, PositionAttribute::class);
     }
 
     /**
-     * @return list<DiscussionPost>
+     * @return list<PositionAttribute>
      */
-    public function findByPositionChronological(Position $position): array
+    public function findByPositionOrdered(Position $position): array
     {
         return $this->findBy(
             ['position' => $position],
-            ['createdAt' => 'ASC']
+            ['sortOrder' => 'ASC']
         );
     }
 }

@@ -15,6 +15,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Table(name: 'users')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const ROLE_CANDIDATE = 'ROLE_CANDIDATE';
+    public const ROLE_RECRUITER = 'ROLE_RECRUITER';
+    public const ROLE_ADMIN = 'ROLE_ADMIN';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -31,6 +35,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 255)]
     private string $name;
+
+    #[ORM\Column]
+    private bool $isBlocked = false;
+
+    #[ORM\Column(length: 10)]
+    private string $locale = 'en';
+
+    #[ORM\Column(length: 20)]
+    private string $theme = 'light';
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
@@ -56,12 +69,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: AttributeValue::class, mappedBy: 'user')]
     private Collection $attributeValues;
 
+    /**
+     * @var Collection<int, CurriculumVitae>
+     */
+    #[ORM\OneToMany(targetEntity: CurriculumVitae::class, mappedBy: 'user')]
+    private Collection $cvs;
+
+    /**
+     * @var Collection<int, CvLike>
+     */
+    #[ORM\OneToMany(targetEntity: CvLike::class, mappedBy: 'recruiter')]
+    private Collection $cvLikes;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->projects = new ArrayCollection();
         $this->discussionPosts = new ArrayCollection();
         $this->attributeValues = new ArrayCollection();
+        $this->cvs = new ArrayCollection();
+        $this->cvLikes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -121,6 +148,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function isBlocked(): bool
+    {
+        return $this->isBlocked;
+    }
+
+    public function setIsBlocked(bool $isBlocked): static
+    {
+        $this->isBlocked = $isBlocked;
+
+        return $this;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(string $locale): static
+    {
+        $this->locale = $locale;
+
+        return $this;
+    }
+
+    public function getTheme(): string
+    {
+        return $this->theme;
+    }
+
+    public function setTheme(string $theme): static
+    {
+        $this->theme = $theme;
 
         return $this;
     }
@@ -230,6 +293,60 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->attributeValues->removeElement($attributeValue) && $attributeValue->getUser() === $this) {
             $attributeValue->setUser(null);
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CurriculumVitae>
+     */
+    public function getCvs(): Collection
+    {
+        return $this->cvs;
+    }
+
+    public function addCv(CurriculumVitae $cv): static
+    {
+        if (!$this->cvs->contains($cv)) {
+            $this->cvs->add($cv);
+            $cv->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCv(CurriculumVitae $cv): static
+    {
+        if ($this->cvs->removeElement($cv) && $cv->getUser() === $this) {
+            $cv->setUser(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CvLike>
+     */
+    public function getCvLikes(): Collection
+    {
+        return $this->cvLikes;
+    }
+
+    public function addCvLike(CvLike $cvLike): static
+    {
+        if (!$this->cvLikes->contains($cvLike)) {
+            $this->cvLikes->add($cvLike);
+            $cvLike->setRecruiter($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCvLike(CvLike $cvLike): static
+    {
+        if ($this->cvLikes->removeElement($cvLike) && $cvLike->getRecruiter() === $this) {
+            $cvLike->setRecruiter(null);
+        }
+
         return $this;
     }
 }

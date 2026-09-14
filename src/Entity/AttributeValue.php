@@ -29,6 +29,10 @@ class AttributeValue
     #[ORM\Column(type: Types::JSON, nullable: true)]
     private mixed $value = null;
 
+    #[ORM\Version]
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $version = 1;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -68,5 +72,10 @@ class AttributeValue
         $this->value = $value;
 
         return $this;
+    }
+
+    public function getVersion(): int
+    {
+        return $this->version;
     }
 }

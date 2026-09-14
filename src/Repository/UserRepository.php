@@ -29,4 +29,9 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $user->setPassword($newHashedPassword);
         $this->getEntityManager()->flush();
     }
+
+    public function findOneByEmail(string $email): ?User
+    {
+        return $this->findOneBy(['email' => $email]);
+    }
 }

@@ -34,8 +34,9 @@ class Attribute
     #[ORM\Column(type: Types::JSON)]
     private array $options = [];
 
-    #[ORM\Column(nullable: true)]
-    private ?int $version = null;
+    #[ORM\Version]
+    #[ORM\Column(type: Types::INTEGER)]
+    private int $version = 1;
 
     #[ORM\ManyToOne(targetEntity: Category::class, inversedBy: 'attributes')]
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true)]
@@ -47,9 +48,16 @@ class Attribute
     #[ORM\OneToMany(mappedBy: 'attribute', targetEntity: AttributeValue::class)]
     private Collection $attributeValues;
 
+    /**
+     * @var Collection<int, PositionAttribute>
+     */
+    #[ORM\OneToMany(mappedBy: 'attribute', targetEntity: PositionAttribute::class)]
+    private Collection $positionAttributes;
+
     public function __construct()
     {
         $this->attributeValues = new ArrayCollection();
+        $this->positionAttributes = new ArrayCollection();
     }
 
     public function getCategory(): ?Category
@@ -86,6 +94,33 @@ class Attribute
     {
         if ($this->attributeValues->removeElement($attributeValue) && $attributeValue->getAttribute() === $this) {
             $attributeValue->setAttribute(null);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PositionAttribute>
+     */
+    public function getPositionAttributes(): Collection
+    {
+        return $this->positionAttributes;
+    }
+
+    public function addPositionAttribute(PositionAttribute $positionAttribute): static
+    {
+        if (!$this->positionAttributes->contains($positionAttribute)) {
+            $this->positionAttributes->add($positionAttribute);
+            $positionAttribute->setAttribute($this);
+        }
+
+        return $this;
+    }
+
+    public function removePositionAttribute(PositionAttribute $positionAttribute): static
+    {
+        if ($this->positionAttributes->removeElement($positionAttribute) && $positionAttribute->getAttribute() === $this) {
+            $positionAttribute->setAttribute(null);
         }
 
         return $this;
@@ -144,6 +179,11 @@ class Attribute
         return $this;
     }
 
+    public function isDeletable(): bool
+    {
+        return !$this->isBuiltIn;
+    }
+
     public function getOptions(): array
     {
         return $this->options;
@@ -156,15 +196,8 @@ class Attribute
         return $this;
     }
 
-    public function getVersion(): ?int
+    public function getVersion(): int
     {
         return $this->version;
-    }
-
-    public function setVersion(?int $version): static
-    {
-        $this->version = $version;
-
-        return $this;
     }
 }

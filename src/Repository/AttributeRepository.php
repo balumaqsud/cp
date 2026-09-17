@@ -17,17 +17,5 @@ class AttributeRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Attribute::class);
     }
-
-    public function findOneByName(string $name): ?Attribute
-    {
-        return $this->findOneBy(['name' => $name]);
-    }
-
-    /**
-     * @return list<Attribute>
-     */
-    public function findBuiltIn(): array
-    {
-        return $this->findBy(['isBuiltIn' => true], ['name' => 'ASC']);
-    }
 }
+

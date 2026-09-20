@@ -18,8 +18,6 @@ class SecurityController extends AbstractController
 {
 
     public function __construct(
-        private readonly SecurityService $securityService,
-        private readonly AuthenticationUtils $authenticationUtils,
     ) {}
 
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
@@ -41,15 +39,12 @@ class SecurityController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, SecurityService $securityService): Response {
-        if($this->getUser()){
-            return $this->redirectToRoute('app_home');
-        }
-        return $this->render('security/login.html.twig', [
-            'last_username' => $this->authenticationUtils->getLastUsername(),
-            'error' => $this->authenticationUtils->getLastAuthenticationError(),
+    public function login(AuthenticationUtils $authenticationUtils): Response
+    { if ($this->getUser()) { return $this->redirectToRoute('app_home');
+    } return $this->render('security/login.html.twig', [
+        'last_username' => $authenticationUtils->getLastUsername(),
+        'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }
 }

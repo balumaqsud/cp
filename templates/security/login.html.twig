@@ -3,17 +3,22 @@
 {% block title %}Log in{% endblock %}
 
 {% block body %}
-    <h1>Log in Form </h1>
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h4 mb-3">Log in</h1>
+                    {{ form_start(form) }}
+                        {{ form_errors(form) }}
+                        {{ form_row(form.email) }}
+                        {{ form_row(form.password) }}
+                        {{ form_row(form.rememberMe) }}
+                        <button type="submit" class="btn btn-primary w-100">Log in</button>
+                    {{ form_end(form) }}
 
-    {{ form_start(form) }}
-        {{ form_errors(form) }}
-        {{ form_row(form.email) }}
-        {{ form_row(form.password) }}
-        {{ form_row(form.rememberMe) }}
-
-        <button type="submit">LOGIN</button>
-    {{ form_end(form) }}
-
-    <p><a href="{{ path('app_register') }}">Sign up</a></p>
-
+                    <p class="mt-3 mb-0"><a href="{{ path('app_register') }}">Sign up</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

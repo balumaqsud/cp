@@ -5,12 +5,15 @@
 {% block body %}
     <h1>Log in Form </h1>
 
-   {{ form_start(form)}}
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
         {{ form_row(form.email) }}
         {{ form_row(form.password) }}
-        {{ form_row(form.rememberMe)}}
+        {{ form_row(form.rememberMe) }}
 
         <button type="submit">LOGIN</button>
     {{ form_end(form) }}
+
+    <p><a href="{{ path('app_register') }}">Sign up</a></p>
 
 {% endblock %}

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\DTO\LoginDTO;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 final class LoginType extends AbstractType
 {
@@ -16,9 +18,17 @@ final class LoginType extends AbstractType
         $builder
             ->add('email', EmailType::class)
             ->add('password', PasswordType::class)
-            ->add('remember_me', CheckboxType::class, [
+            ->add('rememberMe', CheckboxType::class, [
                 'required' => false,
+                'label' => 'Remember me',
             ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => LoginDTO::class,
+        ]);
     }
 
     public function getBlockPrefix(): string {

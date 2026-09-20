@@ -8,9 +8,13 @@ use App\Entity\User;
 use Symfony\Component\Validator\Constraints as Assert;
 
 
-final class LoginDTO {
-
-   public function __construct(string $email, string $password, bool $rememberMe) {
+final class LoginDTO
+{
+    public function __construct(
+        string $email = '',
+        string $password = '',
+        bool $rememberMe = false,
+    ) {
         $this->email = $email;
         $this->password = $password;
         $this->rememberMe = $rememberMe;
@@ -26,7 +30,4 @@ final class LoginDTO {
 
     #[Assert\Type('bool')]
     public bool $rememberMe = false;
-
-
-
 }

@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ owner.name }} — {{ position.title }}{% endblock %}
+
+{% block body %}
+    {% if canEdit %}
+    <div
+        data-controller="autosave"
+        data-autosave-interval-value="8000"
+        data-autosave-unsaved-value="{{ 'profile.autosave.unsaved'|trans }}"
+        data-autosave-saving-value="{{ 'profile.autosave.saving'|trans }}"
+        data-autosave-saved-value="{{ 'profile.autosave.saved'|trans }}"
+    >
+        <form
+            id="cv-values"
+            method="post"
+            action="{{ path('app_cv_values', {id: cv.id}) }}"
+            data-autosave-target="form"
+        >
+            <input type="hidden" name="_token" value="{{ csrf_token('cv_values') }}">
+        </form>
+    {% endif %}
+
+        <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+            <div>
+                <h1 class="h4 mb-1">{{ position.title }}</h1>
+                <p class="text-muted mb-0">
+                    {{ owner.name }}
+                    {% if position.company or position.level %}
+                        · {{ position.company }}
+                        {% if position.company and position.level %} · {% endif %}
+                        {{ position.level }}
+                    {% endif %}
+                </p>
+                <p class="small mb-0">
+                    {{ ('cv.status_' ~ cv.status)|trans }}
+                    · {{ 'cv.likes'|trans }}: {{ likeCount }}
+                </p>
+            </div>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                {% if canEdit %}
+                    <small class="text-muted" data-autosave-target="status"></small>
+                    <button type="submit" class="btn btn-outline-secondary btn-sm" form="cv-values">{{ 'attribute.save'|trans }}</button>
+                {% endif %}
+                {% if canPublish and not published %}
+                    <form method="post" action="{{ path('app_cv_publish', {id: cv.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cv_publish') }}">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            {{ 'cv.publish'|trans }}
+                        </button>
+                    </form>
+                {% endif %}
+                {% if canLike %}
+                    <form method="post" action="{{ path('app_cv_like', {id: cv.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cv_like') }}">
+                        <button type="submit" class="btn btn-sm {{ liked ? 'btn-primary' : 'btn-outline-primary' }}">
+                            {{ liked ? 'cv.unlike'|trans : 'cv.like'|trans }}
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if canEdit and not complete %}
+            <p class="text-danger small">{{ 'cv.incomplete_hint'|trans }}</p>
+        {% endif %}
+
+        <section class="mb-4">
+            <h2 class="h5">{{ 'profile.tab.me'|trans }}</h2>
+            <div class="row g-3 col-lg-8">
+                {% for attribute in builtIns %}
+                    <div class="col-12">
+                        <label class="form-label">
+                            {{ attribute.name }}
+                            <span class="badge text-bg-secondary">{{ 'position.required'|trans }}</span>
+                        </label>
+                        {% include 'profile/_value_field.html.twig' with {
+                            attribute: attribute,
+                            row: values[attribute.id]|default(null),
+                            canEdit: canEdit,
+                            form_id: 'cv-values',
+                            mark_empty: true,
+                            emptyIds: emptyIds,
+                        } %}
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="mb-4">
+            <h2 class="h5">{{ 'position.template'|trans }}</h2>
+            {% if templateAttributes is empty %}
+                <p class="text-muted">{{ 'table.empty'|trans }}</p>
+            {% else %}
+                <div class="row g-3 col-lg-8">
+                    {% for attribute in templateAttributes %}
+                        <div class="col-12">
+                            <label class="form-label">
+                                {{ attribute.name }}
+                                {% if attribute.id in requiredIds %}
+                                    <span class="badge text-bg-secondary">{{ 'position.required'|trans }}</span>
+                                {% endif %}
+                            </label>
+                            {% include 'profile/_value_field.html.twig' with {
+                                attribute: attribute,
+                                row: values[attribute.id]|default(null),
+                                canEdit: canEdit,
+                                form_id: 'cv-values',
+                                mark_empty: true,
+                                emptyIds: emptyIds,
+                            } %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section>
+            <h2 class="h5">{{ 'profile.tab.projects'|trans }}</h2>
+            {% if projects is empty %}
+                <p class="text-muted mb-0">{{ 'table.empty'|trans }}</p>
+            {% else %}
+                {% for project in projects %}
+                    <article class="border-bottom pb-3 mb-3">
+                        <h3 class="h6 mb-1">{{ project.name }}</h3>
+                        <p class="small text-muted mb-2">
+                            {{ project.startDate|date('Y-m-d') }}
+                            –
+                            {{ project.endDate ? project.endDate|date('Y-m-d') : 'project.ongoing'|trans }}
+                            {% if project.technologyTags %}
+                                · {{ project.technologyTags|join(', ') }}
+                            {% endif %}
+                        </p>
+                        {% if project.description %}
+                            <div class="markdown-body">{{ project.description|markdown_to_html }}</div>
+                        {% endif %}
+                    </article>
+                {% endfor %}
+            {% endif %}
+        </section>
+
+    {% if canEdit %}
+    </div>
+    {% endif %}
+{% endblock %}

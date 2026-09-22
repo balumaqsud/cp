@@ -4,41 +4,71 @@
     <form method="post" action="{{ path('app_profile_cv_bulk', {id: profileUser.id}) }}">
         <input type="hidden" name="_token" value="{{ csrf_token('profile_cvs') }}">
         {% include 'partials/_toolbar.html.twig' with {
+            create_url: app.user and app.user.id == profileUser.id ? path('app_cv_new') : null,
+            create_label: 'cv.generate',
             actions: [
                 { value: 'delete', label: 'cv.delete', class: 'btn-outline-danger', confirm: 'cv.confirm_delete'|trans },
             ],
         } %}
 
-        {% set rows = [] %}
-        {% for cv in cvs %}
-            {% set rows = rows|merge([{
-                id: cv.id,
-                cells: [
-                    cv.position ? cv.position.title : '—',
-                    ('cv.status_' ~ cv.status)|trans,
-                ]
-            }]) %}
-        {% endfor %}
-
-        {% include 'partials/_data_table.html.twig' with {
-            headers: ['cv.position', 'cv.status'],
-            rows: rows,
-        } %}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-nowrap" style="width: 2rem;">
+                            <span class="visually-hidden">{{ 'table.select'|trans }}</span>
+                        </th>
+                        <th>{{ 'cv.position'|trans }}</th>
+                        <th>{{ 'cv.status'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if cvs is empty %}
+                        <tr>
+                            <td colspan="3" class="text-muted">{{ 'table.empty'|trans }}</td>
+                        </tr>
+                    {% else %}
+                        {% for cv in cvs %}
+                            <tr>
+                                <td>
+                                    <input class="form-check-input" type="checkbox" name="ids[]" value="{{ cv.id }}">
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_cv_show', {id: cv.id}) }}">{{ cv.position ? cv.position.title : '—' }}</a>
+                                </td>
+                                <td>{{ ('cv.status_' ~ cv.status)|trans }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
     </form>
 {% else %}
-    {% set rows = [] %}
-    {% for cv in cvs %}
-        {% set rows = rows|merge([{
-            id: cv.id,
-            disabled: true,
-            cells: [
-                cv.position ? cv.position.title : '—',
-                ('cv.status_' ~ cv.status)|trans,
-            ]
-        }]) %}
-    {% endfor %}
-    {% include 'partials/_data_table.html.twig' with {
-        headers: ['cv.position', 'cv.status'],
-        rows: rows,
-    } %}
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>{{ 'cv.position'|trans }}</th>
+                    <th>{{ 'cv.status'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if cvs is empty %}
+                    <tr>
+                        <td colspan="2" class="text-muted">{{ 'table.empty'|trans }}</td>
+                    </tr>
+                {% else %}
+                    {% for cv in cvs %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('app_cv_show', {id: cv.id}) }}">{{ cv.position ? cv.position.title : '—' }}</a>
+                            </td>
+                            <td>{{ ('cv.status_' ~ cv.status)|trans }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 {% endif %}

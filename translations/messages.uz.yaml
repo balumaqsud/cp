@@ -102,10 +102,26 @@ cv:
     candidate: Nomzod
     position: Lavozim
     status: Holat
+    likes: Layklar
+    like: Layk
+    unlike: Laykni olish
+    generate: CV yaratish
+    generate_help: Kirish mumkin boʻlgan bitta lavozimni tanlang.
+    open: CV ni ochish
+    publish: Nashr qilish
+    incomplete_hint: Nashrdan oldin barcha majburiy maydonlarni (Men boʻlimi ham) toʻldiring. Boʻsh maydonlar qizil.
     delete: Oʻchirish
     confirm_delete: Tanlangan CV lar oʻchirilsinmi?
     status_draft: Qoralama
     status_published: Nashr qilingan
+    flash:
+        select_one: Faqat bitta qatorni tanlang.
+        saved: CV qiymatlari profilingizga saqlandi.
+        conflict: Bu CV boshqa vkladkada oʻzgargan. Qayta yuklang.
+        incomplete: Nashrdan oldin barcha majburiy maydonlarni toʻldiring.
+        published: CV nashr qilindi.
+        liked: Layk qoʻyildi.
+        unliked: Layk olib tashlandi.
 profile:
     heading: Profil
     name: Ism
@@ -118,7 +134,7 @@ profile:
         cvs: CV lar
     me_help: Har bir profilda boʻladigan tizim maydonlari.
     info_help: Kutubxonadan atribut qoʻshing va toʻldiring. Qiymatlar avtomatik saqlanadi.
-    cvs_help: Lavozimlar uchun yaratilgan CV lar shu yerda chiqadi.
+    cvs_help: Yaratilgan CV lar shu yerda. Kirish mumkin boʻlgan lavozim uchun yarating.
     choose_attribute: Atributni tanlang
     add_attribute: Qoʻshish
     remove_attribute: Olib tashlash

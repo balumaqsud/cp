@@ -74,6 +74,8 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('cv')
             ->innerJoin('cv.position', 'p')->addSelect('p')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'ra')->addSelect('ra')
             ->andWhere('cv.user = :user')
             ->setParameter('user', $user)
             ->orderBy('cv.updatedAt', 'DESC')
@@ -89,12 +91,24 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('cv')
             ->innerJoin('cv.user', 'u')->addSelect('u')
             ->innerJoin('cv.position', 'p')->addSelect('p')
-            ->leftJoin('cv.likes', 'l')->addSelect('l')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'ra')->addSelect('ra')
             ->andWhere('cv.status = :status')
             ->setParameter('status', CvStatus::Published->value)
             ->orderBy('cv.updatedAt', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findOneWithOwnerAndPosition(int $id): ?CurriculumVitae
+    {
+        return $this->createQueryBuilder('cv')
+            ->innerJoin('cv.user', 'u')->addSelect('u')
+            ->innerJoin('cv.position', 'p')->addSelect('p')
+            ->andWhere('cv.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function countPublishedSince(\DateTimeImmutable $since): int

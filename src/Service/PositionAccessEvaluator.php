@@ -43,6 +43,14 @@ final class PositionAccessEvaluator
     /**
      * @param array<int, mixed> $valuesByAttributeId
      */
+    public function matchesValues(Position $position, array $valuesByAttributeId): bool
+    {
+        return $this->passesRules($position, $valuesByAttributeId);
+    }
+
+    /**
+     * @param array<int, mixed> $valuesByAttributeId
+     */
     private function passesRules(Position $position, array $valuesByAttributeId): bool
     {
         if ($position->isPublic()) {

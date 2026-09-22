@@ -5,22 +5,34 @@
 {% block body %}
     <h1 class="h4 mb-3">{{ 'cv.heading'|trans }}</h1>
 
-    {% include 'partials/_toolbar.html.twig' %}
-
-    {% set rows = [] %}
-    {% for cv in cvs %}
-        {% set rows = rows|merge([{
-            id: cv.id,
-            cells: [
-                cv.user ? cv.user.name : '—',
-                cv.position ? cv.position.title : '—',
-                cv.status,
-            ]
-        }]) %}
-    {% endfor %}
-
-    {% include 'partials/_data_table.html.twig' with {
-        headers: ['cv.candidate', 'cv.position', 'cv.status'],
-        rows: rows,
-    } %}
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>{{ 'cv.candidate'|trans }}</th>
+                    <th>{{ 'cv.position'|trans }}</th>
+                    <th>{{ 'cv.status'|trans }}</th>
+                    <th>{{ 'cv.likes'|trans }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if cvs is empty %}
+                    <tr>
+                        <td colspan="4" class="text-muted">{{ 'table.empty'|trans }}</td>
+                    </tr>
+                {% else %}
+                    {% for cv in cvs %}
+                        <tr>
+                            <td>
+                                <a href="{{ path('app_cv_show', {id: cv.id}) }}">{{ cv.user ? cv.user.name : '—' }}</a>
+                            </td>
+                            <td>{{ cv.position ? cv.position.title : '—' }}</td>
+                            <td>{{ ('cv.status_' ~ cv.status)|trans }}</td>
+                            <td>{{ likeCounts[cv.id]|default(0) }}</td>
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

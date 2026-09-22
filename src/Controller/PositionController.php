@@ -15,6 +15,7 @@ use App\Repository\CurriculumVitaeRepository;
 use App\Repository\DiscussionPostRepository;
 use App\Repository\PositionRepository;
 use App\Security\Voter\PositionVoter;
+use App\Service\CvService;
 use App\Service\PositionAccessEvaluator;
 use App\Service\PositionService;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
@@ -34,6 +35,7 @@ class PositionController extends AbstractController
         private readonly DiscussionPostRepository $discussionPosts,
         private readonly PositionAccessEvaluator $accessEvaluator,
         private readonly PositionService $positionService,
+        private readonly CvService $cvService,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -101,9 +103,19 @@ class PositionController extends AbstractController
         }
 
         $user = $this->getUser();
-        $publishedCvs = $user instanceof User && $user->isRecruiter()
-            ? $this->cvs->findPublishedByPosition($position)
-            : [];
+        $publishedCvs = [];
+        if ($user instanceof User && $user->isRecruiter()) {
+            $publishedCvs = $this->cvService->publishedVisibleForPosition($position, $user);
+        }
+
+        $existingCv = null;
+        $canGenerate = false;
+        if ($user instanceof User) {
+            $canGenerate = $this->isGranted(PositionVoter::GENERATE_CV, $position);
+            if ($canGenerate) {
+                $existingCv = $this->cvs->findOneByUserAndPosition($user, $position);
+            }
+        }
 
         return $this->render('position/show.html.twig', [
             'position' => $position,
@@ -112,6 +124,8 @@ class PositionController extends AbstractController
             'discussionForm' => $discussionForm,
             'canDiscuss' => $this->isGranted(PositionVoter::DISCUSS, $position),
             'canManage' => $this->isGranted(PositionVoter::MANAGE),
+            'canGenerate' => $canGenerate,
+            'existingCv' => $existingCv,
         ]);
     }
 

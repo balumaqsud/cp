@@ -52,6 +52,37 @@ class AttributeValueRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<int> $userIds
+     * @return array<int, array<int, mixed>> user id → attribute id → value
+     */
+    public function findIndexedForUserIds(array $userIds): array
+    {
+        if ($userIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('v')
+            ->innerJoin('v.attribute', 'a')->addSelect('a')
+            ->innerJoin('v.user', 'u')->addSelect('u')
+            ->andWhere('u.id IN (:ids)')
+            ->setParameter('ids', $userIds)
+            ->getQuery()
+            ->getResult();
+
+        $indexed = [];
+        foreach ($rows as $row) {
+            $userId = $row->getUser()?->getId();
+            $attributeId = $row->getAttribute()?->getId();
+            if ($userId === null || $attributeId === null) {
+                continue;
+            }
+            $indexed[$userId][$attributeId] = $row->getValue();
+        }
+
+        return $indexed;
+    }
+
+    /**
      * @return array<int, AttributeValue>
      */
     public function findEntitiesIndexedByAttributeId(User $user): array

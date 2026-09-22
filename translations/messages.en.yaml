@@ -102,10 +102,26 @@ cv:
     candidate: Candidate
     position: Position
     status: Status
+    likes: Likes
+    like: Like
+    unlike: Unlike
+    generate: Generate CV
+    generate_help: Select one accessible position.
+    open: Open CV
+    publish: Publish
+    incomplete_hint: Fill every required field (including Me) before publishing. Empty fields are marked in red.
     delete: Delete
     confirm_delete: Delete the selected CVs?
     status_draft: Draft
     status_published: Published
+    flash:
+        select_one: Select exactly one row.
+        saved: CV values saved to your profile.
+        conflict: This CV was changed in another tab. Reload and try again.
+        incomplete: Fill every required field before publishing.
+        published: CV published.
+        liked: Liked.
+        unliked: Like removed.
 profile:
     heading: Profile
     name: Name
@@ -118,7 +134,7 @@ profile:
         cvs: CVs
     me_help: Built-in fields that every profile has.
     info_help: Add attributes from the library and fill them in. Values are saved automatically.
-    cvs_help: CVs generated for positions will appear here.
+    cvs_help: Generated CVs appear here. Create one for a position you can access.
     choose_attribute: Choose an attribute
     add_attribute: Add
     remove_attribute: Remove

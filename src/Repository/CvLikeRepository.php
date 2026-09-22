@@ -32,4 +32,31 @@ class CvLikeRepository extends ServiceEntityRepository
     {
         return $this->count(['curriculumVitae' => $curriculumVitae]);
     }
+
+    /**
+     * @param list<int> $cvIds
+     * @return array<int, int>
+     */
+    public function countIndexedByCvIds(array $cvIds): array
+    {
+        if ($cvIds === []) {
+            return [];
+        }
+
+        $rows = $this->createQueryBuilder('l')
+            ->select('cv.id AS cvId, COUNT(l.id) AS cnt')
+            ->innerJoin('l.curriculumVitae', 'cv')
+            ->andWhere('cv.id IN (:ids)')
+            ->setParameter('ids', $cvIds)
+            ->groupBy('cv.id')
+            ->getQuery()
+            ->getScalarResult();
+
+        $indexed = [];
+        foreach ($rows as $row) {
+            $indexed[(int) $row['cvId']] = (int) $row['cnt'];
+        }
+
+        return $indexed;
+    }
 }

@@ -1,1 +1,4 @@
-
+.cv-field-empty {
+    outline: 2px solid var(--bs-danger);
+    background-color: color-mix(in srgb, var(--bs-danger) 10%, transparent);
+}

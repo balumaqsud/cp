@@ -14,6 +14,7 @@ use App\Repository\CurriculumVitaeRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
 use App\Security\Voter\ProfileVoter;
+use App\Service\CvService;
 use App\Service\ProfileValueService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
@@ -31,6 +32,7 @@ class ProfileController extends AbstractController
         private readonly ProjectRepository $projects,
         private readonly CurriculumVitaeRepository $cvs,
         private readonly ProfileValueService $profileValues,
+        private readonly CvService $cvService,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -222,7 +224,7 @@ class ProfileController extends AbstractController
             'availableAttributes' => $available,
             'values' => $values,
             'projects' => $this->projects->findByOwner($profileUser),
-            'cvs' => $this->cvs->findByUser($profileUser),
+            'cvs' => $this->cvService->listForProfile($profileUser, $this->requireCurrentUser()),
             'tagSuggestions' => $this->projects->findDistinctTags(),
         ]);
     }

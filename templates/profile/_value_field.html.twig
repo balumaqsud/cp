@@ -1,4 +1,5 @@
 {% set current = row ? row.value : null %}
+<div class="{% if mark_empty|default(false) and attribute.id in emptyIds|default([]) %}cv-field-empty rounded p-1{% endif %}">
 
 {% if not canEdit %}
     {% if attribute.type == 'boolean' %}
@@ -47,3 +48,4 @@
         <input class="form-control form-control-sm" type="text" name="values[{{ attribute.id }}][value]" value="{{ current }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
     {% endif %}
 {% endif %}
+</div>

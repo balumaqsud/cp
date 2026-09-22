@@ -14,9 +14,22 @@
                 </p>
             {% endif %}
         </div>
-        {% if canManage %}
-            <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_position_edit', {id: position.id}) }}">{{ 'position.edit'|trans }}</a>
-        {% endif %}
+        <div class="d-flex gap-2">
+            {% if canManage %}
+                <a class="btn btn-outline-secondary btn-sm" href="{{ path('app_position_edit', {id: position.id}) }}">{{ 'position.edit'|trans }}</a>
+            {% endif %}
+            {% if canGenerate %}
+                {% if existingCv %}
+                    <a class="btn btn-primary btn-sm" href="{{ path('app_cv_show', {id: existingCv.id}) }}">{{ 'cv.open'|trans }}</a>
+                {% else %}
+                    <form method="post" action="{{ path('app_cv_generate') }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('cv_generate') }}">
+                        <input type="hidden" name="position_id" value="{{ position.id }}">
+                        <button type="submit" class="btn btn-primary btn-sm">{{ 'cv.generate'|trans }}</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
     </div>
 
     <ul class="nav nav-tabs" role="tablist">
@@ -76,8 +89,10 @@
                             {% else %}
                                 {% for cv in publishedCvs %}
                                     <tr>
-                                        <td>{{ cv.user ? cv.user.name : '—' }}</td>
-                                        <td>{{ cv.status }}</td>
+                                        <td>
+                                            <a href="{{ path('app_cv_show', {id: cv.id}) }}">{{ cv.user ? cv.user.name : '—' }}</a>
+                                        </td>
+                                        <td>{{ ('cv.status_' ~ cv.status)|trans }}</td>
                                     </tr>
                                 {% endfor %}
                             {% endif %}

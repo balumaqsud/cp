@@ -28,6 +28,28 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<int> $ids
+     * @return list<Project>
+     */
+    public function findByOwnerAndIds(User $owner, array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<Project> $rows */
+        $rows = $this->createQueryBuilder('p')
+            ->andWhere('p.owner = :owner')
+            ->andWhere('p.id IN (:ids)')
+            ->setParameter('owner', $owner)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
+    }
+
+    /**
      * @return list<string>
      */
     public function findDistinctTags(): array

@@ -1,0 +1,47 @@
+{% if canEdit %}
+    <form method="post" action="{{ path('app_profile_project_bulk', {id: profileUser.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('profile_projects') }}">
+        {% include 'partials/_toolbar.html.twig' with {
+            create_url: path('app_profile_project_new', {id: profileUser.id}),
+            create_label: 'project.create',
+            actions: [
+                { value: 'edit', label: 'project.edit' },
+                { value: 'delete', label: 'project.delete', class: 'btn-outline-danger', confirm: 'project.confirm_delete'|trans },
+            ],
+        } %}
+
+        {% set rows = [] %}
+        {% for project in projects %}
+            {% set rows = rows|merge([{
+                id: project.id,
+                cells: [
+                    project.name,
+                    project.startDate|date('Y-m-d') ~ ' – ' ~ (project.endDate ? project.endDate|date('Y-m-d') : 'project.ongoing'|trans),
+                    project.technologyTags|join(', '),
+                ]
+            }]) %}
+        {% endfor %}
+
+        {% include 'partials/_data_table.html.twig' with {
+            headers: ['project.name', 'project.period', 'project.tags'],
+            rows: rows,
+        } %}
+    </form>
+{% else %}
+    {% set rows = [] %}
+    {% for project in projects %}
+        {% set rows = rows|merge([{
+            id: project.id,
+            disabled: true,
+            cells: [
+                project.name,
+                project.startDate|date('Y-m-d') ~ ' – ' ~ (project.endDate ? project.endDate|date('Y-m-d') : 'project.ongoing'|trans),
+                project.technologyTags|join(', '),
+            ]
+        }]) %}
+    {% endfor %}
+    {% include 'partials/_data_table.html.twig' with {
+        headers: ['project.name', 'project.period', 'project.tags'],
+        rows: rows,
+    } %}
+{% endif %}

@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ project.id ? 'project.edit'|trans : 'project.create'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ project.id ? 'project.edit'|trans : 'project.create'|trans }}</h1>
+
+    <div class="row">
+        <div class="col-lg-6">
+            {{ form_start(form) }}
+                {{ form_row(form.name) }}
+                {{ form_row(form.startDate) }}
+                {{ form_row(form.endDate) }}
+                {{ form_row(form.description) }}
+                {{ form_row(form.tagsText) }}
+                <datalist id="project-tag-suggestions">
+                    {% for tag in tagSuggestions %}
+                        <option value="{{ tag }}"></option>
+                    {% endfor %}
+                </datalist>
+                <p class="form-text">{{ 'project.tags_help'|trans }}</p>
+                <button type="submit" class="btn btn-primary">{{ 'attribute.save'|trans }}</button>
+                <a class="btn btn-outline-secondary" href="{{ path('app_profile_show', {id: profileUser.id, tab: 'projects'}) }}">{{ 'attribute.cancel'|trans }}</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

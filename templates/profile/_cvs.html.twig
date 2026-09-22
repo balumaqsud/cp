@@ -1,0 +1,44 @@
+<p class="text-muted small">{{ 'profile.cvs_help'|trans }}</p>
+
+{% if canEdit %}
+    <form method="post" action="{{ path('app_profile_cv_bulk', {id: profileUser.id}) }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('profile_cvs') }}">
+        {% include 'partials/_toolbar.html.twig' with {
+            actions: [
+                { value: 'delete', label: 'cv.delete', class: 'btn-outline-danger', confirm: 'cv.confirm_delete'|trans },
+            ],
+        } %}
+
+        {% set rows = [] %}
+        {% for cv in cvs %}
+            {% set rows = rows|merge([{
+                id: cv.id,
+                cells: [
+                    cv.position ? cv.position.title : '—',
+                    ('cv.status_' ~ cv.status)|trans,
+                ]
+            }]) %}
+        {% endfor %}
+
+        {% include 'partials/_data_table.html.twig' with {
+            headers: ['cv.position', 'cv.status'],
+            rows: rows,
+        } %}
+    </form>
+{% else %}
+    {% set rows = [] %}
+    {% for cv in cvs %}
+        {% set rows = rows|merge([{
+            id: cv.id,
+            disabled: true,
+            cells: [
+                cv.position ? cv.position.title : '—',
+                ('cv.status_' ~ cv.status)|trans,
+            ]
+        }]) %}
+    {% endfor %}
+    {% include 'partials/_data_table.html.twig' with {
+        headers: ['cv.position', 'cv.status'],
+        rows: rows,
+    } %}
+{% endif %}

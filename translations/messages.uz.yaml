@@ -102,10 +102,55 @@ cv:
     candidate: Nomzod
     position: Lavozim
     status: Holat
+    delete: Oʻchirish
+    confirm_delete: Tanlangan CV lar oʻchirilsinmi?
+    status_draft: Qoralama
+    status_published: Nashr qilingan
 profile:
     heading: Profil
     name: Ism
     email: Email
+    value: Qiymat
+    tab:
+        me: Men
+        info: Maʼlumot
+        projects: Loyihalar
+        cvs: CV lar
+    me_help: Har bir profilda boʻladigan tizim maydonlari.
+    info_help: Kutubxonadan atribut qoʻshing va toʻldiring. Qiymatlar avtomatik saqlanadi.
+    cvs_help: Lavozimlar uchun yaratilgan CV lar shu yerda chiqadi.
+    choose_attribute: Atributni tanlang
+    add_attribute: Qoʻshish
+    remove_attribute: Olib tashlash
+    confirm_remove_attributes: Tanlangan atributlar profildan olib tashlansinmi?
+    autosave:
+        unsaved: Saqlanmagan oʻzgarishlar
+        saving: Saqlanmoqda…
+        saved: Saqlandi
+    flash:
+        saved: Profil saqlandi.
+        conflict: Bu profil boshqa vkladkada oʻzgargan. Qayta yuklang.
+        select_one: Faqat bitta qatorni tanlang.
+        select_attribute: Qoʻshish uchun atribut tanlang.
+        attribute_added: Atribut qoʻshildi.
+        attribute_removed: Tanlangan atributlar olib tashlandi.
+        project_created: Loyiha yaratildi.
+        project_updated: Loyiha yangilandi.
+        project_deleted: Tanlangan loyihalar oʻchirildi.
+        cvs_deleted: Tanlangan CV lar oʻchirildi.
+project:
+    name: Nom
+    period: Davr
+    start: Boshlanish sanasi
+    end: Tugash sanasi (davom etsa boʻsh)
+    description: Tavsif (Markdown)
+    tags: Texnologiya teglari (vergul bilan)
+    tags_help: Takliflar allaqachon ishlatilgan teglardan olinadi.
+    ongoing: davom etmoqda
+    create: Yaratish
+    edit: Tahrirlash
+    delete: Oʻchirish
+    confirm_delete: Tanlangan loyihalar oʻchirilsinmi?
 search:
     heading: Qidiruv
     positions: Lavozimlar

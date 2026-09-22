@@ -46,6 +46,28 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<int> $ids
+     * @return list<CurriculumVitae>
+     */
+    public function findByUserAndIds(User $user, array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<CurriculumVitae> $rows */
+        $rows = $this->createQueryBuilder('cv')
+            ->andWhere('cv.user = :user')
+            ->andWhere('cv.id IN (:ids)')
+            ->setParameter('user', $user)
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
+    }
+
+    /**
      * @return list<CurriculumVitae>
      */
     public function findByUser(User $user): array

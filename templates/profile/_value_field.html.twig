@@ -1,0 +1,49 @@
+{% set current = row ? row.value : null %}
+
+{% if not canEdit %}
+    {% if attribute.type == 'boolean' %}
+        {{ current ? 'attribute.yes'|trans : 'attribute.no'|trans }}
+    {% elseif attribute.type == 'period' %}
+        {{ current is iterable ? current.from|default('—') : '—' }}
+        –
+        {{ current is iterable ? current.to|default('—') : '—' }}
+    {% elseif attribute.type == 'image' and current %}
+        <img src="{{ current }}" alt="{{ attribute.name }}" class="img-fluid" style="max-height: 80px;">
+    {% elseif attribute.type == 'text' and current %}
+        <div class="markdown-body">{{ current|markdown_to_html }}</div>
+    {% else %}
+        {{ current ?? '—' }}
+    {% endif %}
+{% else %}
+    <input type="hidden" name="values[{{ attribute.id }}][version]" value="{{ row ? row.version : '' }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+
+    {% if attribute.type == 'boolean' %}
+        <input type="hidden" name="values[{{ attribute.id }}][value]" value="0"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+        <input class="form-check-input" type="checkbox" name="values[{{ attribute.id }}][value]" value="1" {{ current ? 'checked' }}{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+    {% elseif attribute.type == 'text' %}
+        <textarea class="form-control form-control-sm" rows="4" name="values[{{ attribute.id }}][value]"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>{{ current }}</textarea>
+    {% elseif attribute.type == 'numeric' %}
+        <input class="form-control form-control-sm" type="number" step="any" name="values[{{ attribute.id }}][value]" value="{{ current }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+    {% elseif attribute.type == 'date' %}
+        <input class="form-control form-control-sm" type="date" name="values[{{ attribute.id }}][value]" value="{{ current }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+    {% elseif attribute.type == 'period' %}
+        <div class="d-flex gap-2">
+            <input class="form-control form-control-sm" type="date" name="values[{{ attribute.id }}][from]" value="{{ current is iterable ? current.from|default('') : '' }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+            <input class="form-control form-control-sm" type="date" name="values[{{ attribute.id }}][to]" value="{{ current is iterable ? current.to|default('') : '' }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+        </div>
+    {% elseif attribute.type == 'choice' %}
+        <select class="form-select form-select-sm" name="values[{{ attribute.id }}][value]"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+            <option value="">—</option>
+            {% for option in attribute.options %}
+                <option value="{{ option }}" {{ current == option ? 'selected' }}>{{ option }}</option>
+            {% endfor %}
+        </select>
+    {% elseif attribute.type == 'image' %}
+        <input class="form-control form-control-sm" type="url" name="values[{{ attribute.id }}][value]" value="{{ current }}" placeholder="https://"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+        {% if current %}
+            <img src="{{ current }}" alt="{{ attribute.name }}" class="img-fluid mt-2" style="max-height: 80px;">
+        {% endif %}
+    {% else %}
+        <input class="form-control form-control-sm" type="text" name="values[{{ attribute.id }}][value]" value="{{ current }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
+    {% endif %}
+{% endif %}

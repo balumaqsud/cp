@@ -102,10 +102,55 @@ cv:
     candidate: Candidate
     position: Position
     status: Status
+    delete: Delete
+    confirm_delete: Delete the selected CVs?
+    status_draft: Draft
+    status_published: Published
 profile:
     heading: Profile
     name: Name
     email: Email
+    value: Value
+    tab:
+        me: Me
+        info: Info
+        projects: Projects
+        cvs: CVs
+    me_help: Built-in fields that every profile has.
+    info_help: Add attributes from the library and fill them in. Values are saved automatically.
+    cvs_help: CVs generated for positions will appear here.
+    choose_attribute: Choose an attribute
+    add_attribute: Add
+    remove_attribute: Remove
+    confirm_remove_attributes: Remove the selected attributes from this profile?
+    autosave:
+        unsaved: Unsaved changes
+        saving: Saving…
+        saved: Saved
+    flash:
+        saved: Profile saved.
+        conflict: This profile was changed in another tab. Reload and try again.
+        select_one: Select exactly one row.
+        select_attribute: Choose an attribute to add.
+        attribute_added: Attribute added.
+        attribute_removed: Selected attributes were removed.
+        project_created: Project created.
+        project_updated: Project updated.
+        project_deleted: Selected projects were deleted.
+        cvs_deleted: Selected CVs were deleted.
+project:
+    name: Name
+    period: Period
+    start: Start date
+    end: End date (empty if ongoing)
+    description: Description (Markdown)
+    tags: Technology tags (comma-separated)
+    tags_help: Suggestions come from tags already used on projects and positions.
+    ongoing: ongoing
+    create: Create
+    edit: Edit
+    delete: Delete
+    confirm_delete: Delete the selected projects?
 search:
     heading: Search
     positions: Positions

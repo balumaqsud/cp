@@ -1,0 +1,16 @@
+<div class="d-flex flex-wrap gap-2 mb-3">
+    {% if create_url is defined and create_url %}
+        <a class="btn btn-primary btn-sm" href="{{ create_url }}">{{ create_label|default('Create')|trans }}</a>
+    {% endif %}
+    {% for action in actions|default([]) %}
+        <button
+            type="submit"
+            name="toolbar_action"
+            value="{{ action.value }}"
+            class="btn btn-sm {{ action.class|default('btn-outline-secondary') }}"
+            {% if action.confirm is defined %}onclick="return confirm({{ action.confirm|json_encode|raw }})"{% endif %}
+        >
+            {{ action.label|trans }}
+        </button>
+    {% endfor %}
+</div>

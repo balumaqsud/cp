@@ -22,4 +22,12 @@ class CategoryRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['name' => $name]);
     }
+
+    /**
+     * @return list<Category>
+     */
+    public function findAllOrdered(): array
+    {
+        return $this->findBy([], ['name' => 'ASC']);
+    }
 }

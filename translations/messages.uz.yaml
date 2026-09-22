@@ -1,0 +1,51 @@
+nav:
+    brand: CV boshqaruvi
+    home: Bosh sahifa
+    positions: Lavozimlar
+    attributes: Atributlar
+    cvs: CV lar
+    profile: Profil
+    search: Qidiruv
+    search_placeholder: Qidirish…
+    login: Kirish
+    register: Roʻyxatdan oʻtish
+    logout: Chiqish
+locale:
+    en: EN
+    uz: UZ
+theme:
+    light: Yorugʻ
+    dark: Qorongʻi
+table:
+    empty: Hali yozuv yoʻq.
+    select: Tanlash
+position:
+    title: Nom
+    company: Kompaniya
+    level: Daraja
+    public: Ommaviy
+attribute:
+    heading: Atributlar kutubxonasi
+    name: Nom
+    category: Turkum
+    type: Tur
+    built_in: Tizim
+cv:
+    heading: CV lar
+    candidate: Nomzod
+    position: Lavozim
+    status: Holat
+profile:
+    heading: Profil
+    name: Ism
+    email: Email
+search:
+    heading: Qidiruv
+    positions: Lavozimlar
+    cvs: CV lar
+    empty: Mos yozuv yoʻq.
+    prompt: Sarlavhadagi qidiruvga soʻz yozing.
+home:
+    title: Kurs loyihasi
+    lead: Ilova ishlayapti.
+    signed_in: '%email% sifatida kirdingiz.'

@@ -1,0 +1,51 @@
+nav:
+    brand: CV management
+    home: Home
+    positions: Positions
+    attributes: Attributes
+    cvs: CVs
+    profile: Profile
+    search: Search
+    search_placeholder: Search…
+    login: Log in
+    register: Sign up
+    logout: Log out
+locale:
+    en: EN
+    uz: UZ
+theme:
+    light: Light
+    dark: Dark
+table:
+    empty: No records yet.
+    select: Select
+position:
+    title: Title
+    company: Company
+    level: Level
+    public: Public
+attribute:
+    heading: Attribute library
+    name: Name
+    category: Category
+    type: Type
+    built_in: Built-in
+cv:
+    heading: CVs
+    candidate: Candidate
+    position: Position
+    status: Status
+profile:
+    heading: Profile
+    name: Name
+    email: Email
+search:
+    heading: Search
+    positions: Positions
+    cvs: CVs
+    empty: No matches.
+    prompt: Type a query in the header.
+home:
+    title: Course project
+    lead: App is running.
+    signed_in: 'Signed in as %email%.'

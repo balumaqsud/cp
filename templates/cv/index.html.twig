@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'cv.heading'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ 'cv.heading'|trans }}</h1>
+
+    {% include 'partials/_toolbar.html.twig' %}
+
+    {% set rows = [] %}
+    {% for cv in cvs %}
+        {% set rows = rows|merge([{
+            id: cv.id,
+            cells: [
+                cv.user ? cv.user.name : '—',
+                cv.position ? cv.position.title : '—',
+                cv.status,
+            ]
+        }]) %}
+    {% endfor %}
+
+    {% include 'partials/_data_table.html.twig' with {
+        headers: ['cv.candidate', 'cv.position', 'cv.status'],
+        rows: rows,
+    } %}
+{% endblock %}

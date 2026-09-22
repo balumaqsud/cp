@@ -8,10 +8,12 @@ use App\Repository\AttributeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AttributeRepository::class)]
 #[ORM\Table(name: 'attributes')]
+#[UniqueEntity(fields: ['name'], message: 'An attribute with this name already exists.')]
 class Attribute
 {
     #[ORM\Id]

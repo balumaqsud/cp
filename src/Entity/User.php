@@ -139,6 +139,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return false;
     }
 
+    public function isAdmin(): bool
+    {
+        return \in_array(self::ROLE_ADMIN, $this->getRoles(), true);
+    }
+
+    public function isRecruiter(): bool
+    {
+        return $this->isAdmin() || \in_array(self::ROLE_RECRUITER, $this->getRoles(), true);
+    }
+
+    public function isCandidate(): bool
+    {
+        return $this->isAdmin() || \in_array(self::ROLE_CANDIDATE, $this->getRoles(), true);
+    }
+
     public function getPassword(): ?string
     {
         return $this->password;

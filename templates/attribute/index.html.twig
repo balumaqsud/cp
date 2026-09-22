@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'attribute.heading'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ 'attribute.heading'|trans }}</h1>
+
+    {% include 'partials/_toolbar.html.twig' %}
+
+    {% set rows = [] %}
+    {% for attribute in attributes %}
+        {% set rows = rows|merge([{
+            id: attribute.id,
+            disabled: attribute.builtIn,
+            cells: [
+                attribute.name,
+                attribute.category ? attribute.category.name : '—',
+                attribute.type,
+                attribute.builtIn ? 'yes' : 'no',
+            ]
+        }]) %}
+    {% endfor %}
+
+    {% include 'partials/_data_table.html.twig' with {
+        headers: ['attribute.name', 'attribute.category', 'attribute.type', 'attribute.built_in'],
+        rows: rows,
+    } %}
+{% endblock %}

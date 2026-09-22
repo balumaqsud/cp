@@ -33,3 +33,5 @@ security:
         - { path: ^/logout, roles: PUBLIC_ACCESS }
         - { path: ^/choose-role, roles: ROLE_USER }
         - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/attributes, roles: ROLE_USER }
+        - { path: ^/cvs, roles: ROLE_USER }

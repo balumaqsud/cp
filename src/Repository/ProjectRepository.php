@@ -26,4 +26,52 @@ class ProjectRepository extends ServiceEntityRepository
     {
         return $this->findBy(['owner' => $owner], ['startDate' => 'DESC']);
     }
+
+    /**
+     * @return list<string>
+     */
+    public function findDistinctTags(): array
+    {
+        $tags = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            <<<'SQL'
+            SELECT DISTINCT lower(tag) AS tag
+            FROM (
+                SELECT jsonb_array_elements_text(technology_tags) AS tag FROM projects
+                UNION ALL
+                SELECT jsonb_array_elements_text(project_tags) AS tag FROM positions
+            ) t
+            WHERE tag <> ''
+            ORDER BY tag
+            SQL,
+        );
+
+        return array_map(static fn (mixed $tag): string => (string) $tag, $tags);
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    public function tagCloud(): array
+    {
+        $rows = $this->getEntityManager()->getConnection()->fetchAllAssociative(
+            <<<'SQL'
+            SELECT lower(tag) AS tag, COUNT(*)::int AS cnt
+            FROM (
+                SELECT jsonb_array_elements_text(technology_tags) AS tag FROM projects
+                UNION ALL
+                SELECT jsonb_array_elements_text(project_tags) AS tag FROM positions
+            ) t
+            WHERE tag <> ''
+            GROUP BY lower(tag)
+            ORDER BY cnt DESC, tag ASC
+            SQL,
+        );
+
+        $cloud = [];
+        foreach ($rows as $row) {
+            $cloud[(string) $row['tag']] = (int) $row['cnt'];
+        }
+
+        return $cloud;
+    }
 }

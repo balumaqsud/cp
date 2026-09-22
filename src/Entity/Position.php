@@ -61,14 +61,14 @@ class Position
     /**
      * @var Collection<int, PositionAttribute>
      */
-    #[ORM\OneToMany(targetEntity: PositionAttribute::class, mappedBy: 'position')]
+    #[ORM\OneToMany(targetEntity: PositionAttribute::class, mappedBy: 'position', cascade: ['persist'], orphanRemoval: true)]
     #[ORM\OrderBy(['sortOrder' => 'ASC'])]
     private Collection $positionAttributes;
 
     /**
      * @var Collection<int, PositionAccessRule>
      */
-    #[ORM\OneToMany(targetEntity: PositionAccessRule::class, mappedBy: 'position')]
+    #[ORM\OneToMany(targetEntity: PositionAccessRule::class, mappedBy: 'position', cascade: ['persist'], orphanRemoval: true)]
     private Collection $accessRules;
 
     /**

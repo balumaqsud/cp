@@ -1,0 +1,32 @@
+<div class="table-responsive">
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th scope="col" class="text-nowrap" style="width: 2rem;">
+                    <span class="visually-hidden">{{ 'table.select'|trans }}</span>
+                </th>
+                {% for header in headers %}
+                    <th scope="col">{{ header|trans }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% if rows is empty %}
+                <tr>
+                    <td colspan="{{ headers|length + 1 }}" class="text-muted">{{ 'table.empty'|trans }}</td>
+                </tr>
+            {% else %}
+                {% for row in rows %}
+                    <tr>
+                        <td>
+                            <input class="form-check-input" type="checkbox" name="ids[]" value="{{ row.id }}" {% if row.disabled|default(false) %}disabled{% endif %}>
+                        </td>
+                        {% for cell in row.cells %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>

@@ -27,4 +27,49 @@ class AttributeValueRepository extends ServiceEntityRepository
             'attribute' => $attribute,
         ]);
     }
+
+    /**
+     * @return array<int, mixed>
+     */
+    public function findIndexedByAttributeId(User $user): array
+    {
+        $rows = $this->createQueryBuilder('v')
+            ->andWhere('v.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        $indexed = [];
+        foreach ($rows as $row) {
+            $id = $row->getAttribute()?->getId();
+            if ($id !== null) {
+                $indexed[$id] = $row->getValue();
+            }
+        }
+
+        return $indexed;
+    }
+
+    /**
+     * @return array<int, AttributeValue>
+     */
+    public function findEntitiesIndexedByAttributeId(User $user): array
+    {
+        $rows = $this->createQueryBuilder('v')
+            ->innerJoin('v.attribute', 'a')->addSelect('a')
+            ->andWhere('v.user = :user')
+            ->setParameter('user', $user)
+            ->getQuery()
+            ->getResult();
+
+        $indexed = [];
+        foreach ($rows as $row) {
+            $id = $row->getAttribute()?->getId();
+            if ($id !== null) {
+                $indexed[$id] = $row;
+            }
+        }
+
+        return $indexed;
+    }
 }

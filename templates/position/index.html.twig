@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'nav.positions'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ 'nav.positions'|trans }}</h1>
+
+    {% include 'partials/_toolbar.html.twig' %}
+
+    {% set rows = [] %}
+    {% for position in positions %}
+        {% set rows = rows|merge([{
+            id: position.id,
+            cells: [
+                position.title,
+                position.company ?? '—',
+                position.level ?? '—',
+                position.public ? 'yes' : 'no',
+            ]
+        }]) %}
+    {% endfor %}
+
+    {% include 'partials/_data_table.html.twig' with {
+        headers: ['position.title', 'position.company', 'position.level', 'position.public'],
+        rows: rows,
+    } %}
+{% endblock %}

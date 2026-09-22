@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'search.heading'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ 'search.heading'|trans }}</h1>
+
+    {% if query is empty %}
+        <p class="text-muted">{{ 'search.prompt'|trans }}</p>
+    {% else %}
+        <h2 class="h6 mt-4">{{ 'search.positions'|trans }}</h2>
+        {% set positionRows = [] %}
+        {% for position in results.positions %}
+            {% set positionRows = positionRows|merge([{
+                id: position.id,
+                cells: [position.title, position.company ?? '—', position.level ?? '—']
+            }]) %}
+        {% endfor %}
+        {% include 'partials/_data_table.html.twig' with {
+            headers: ['position.title', 'position.company', 'position.level'],
+            rows: positionRows,
+        } %}
+
+        {% if is_granted('CV_LIST') %}
+            <h2 class="h6 mt-4">{{ 'search.cvs'|trans }}</h2>
+            {% set cvRows = [] %}
+            {% for cv in results.cvs %}
+                {% set cvRows = cvRows|merge([{
+                    id: cv.id,
+                    cells: [
+                        cv.user ? cv.user.name : '—',
+                        cv.position ? cv.position.title : '—',
+                    ]
+                }]) %}
+            {% endfor %}
+            {% include 'partials/_data_table.html.twig' with {
+                headers: ['cv.candidate', 'cv.position'],
+                rows: cvRows,
+            } %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

@@ -30,7 +30,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
@@ -128,12 +128,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function hasAssignedRole(): bool
+    {
+        foreach ($this->getRoles() as $role) {
+            if (\in_array($role, [self::ROLE_CANDIDATE, self::ROLE_RECRUITER, self::ROLE_ADMIN], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function getPassword(): ?string
     {
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
         $this->password = $password;
 

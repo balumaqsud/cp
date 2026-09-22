@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Choose a role{% endblock %}
+
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-body">
+                    <h1 class="h4 mb-3">Choose a role</h1>
+                    <p class="text-muted">Pick how you will use the platform. You can ask an administrator later if you need a different role.</p>
+
+                    {{ form_start(form) }}
+                        {{ form_row(form.role) }}
+                        <button type="submit" class="btn btn-primary w-100">Continue</button>
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

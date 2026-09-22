@@ -24,12 +24,79 @@ position:
     company: Company
     level: Level
     public: Public
+    create: Create
+    edit: Edit
+    duplicate: Duplicate
+    delete: Delete
+    confirm_delete: Delete the selected positions?
+    description: Short description
+    level_any: Any
+    public_help: Visible to everyone
+    project_tags: Project tags (comma-separated)
+    max_projects: Max projects on CV
+    template: Template
+    template_help: Choose which profile attributes appear on CVs for this position.
+    include: Include
+    required: Required
+    access_rules: Access rules
+    access_rules_help: All rules must match (AND). Leave empty to allow any signed-in user when the position is not public.
+    operator: Operator
+    compare_value: Compare value
+    add_rule: Add rule
+    remove_rule: Remove
+    rule_attribute: Attribute
+    discussion: Discussion
+    discussion_message: Message
+    post: Post
+    no_posts: No messages yet.
+    flash:
+        created: Position created.
+        updated: Position updated.
+        deleted: Selected positions were deleted.
+        duplicated: Position duplicated.
+        select_one: Select exactly one row.
+        in_use: One or more positions cannot be deleted.
+        conflict: This position was changed in another tab. Reload and try again.
+        posted: Message posted.
 attribute:
     heading: Attribute library
     name: Name
     category: Category
+    category_all: All categories
+    category_placeholder: Choose a category
     type: Type
+    types:
+        string: String
+        text: Text
+        numeric: Numeric
+        boolean: Boolean
+        date: Date
+        period: Period
+        choice: Choice
+        image: Image URL
     built_in: Built-in
+    description: Description
+    options: Choices (one per line)
+    options_required: Add at least one choice for this type.
+    filter_prefix: Name prefix
+    filter: Filter
+    create: Create
+    edit: Edit
+    delete: Delete
+    save: Save
+    cancel: Cancel
+    yes: 'yes'
+    no: 'no'
+    confirm_delete: Delete the selected attributes?
+    unique_name: An attribute with this name already exists.
+    flash:
+        created: Attribute created.
+        updated: Attribute updated.
+        deleted: Selected attributes were deleted.
+        select_one: Select exactly one row.
+        builtin_locked: Built-in attributes cannot be changed or deleted.
+        in_use: One or more attributes are still used and cannot be deleted.
+        conflict: This attribute was changed in another tab. Reload and try again.
 cv:
     heading: CVs
     candidate: Candidate

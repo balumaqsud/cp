@@ -24,12 +24,79 @@ position:
     company: Kompaniya
     level: Daraja
     public: Ommaviy
+    create: Yaratish
+    edit: Tahrirlash
+    duplicate: Nusxa
+    delete: Oʻchirish
+    confirm_delete: Tanlangan lavozimlar oʻchirilsinmi?
+    description: Qisqa tavsif
+    level_any: Istalgan
+    public_help: Hammaga koʻrinadi
+    project_tags: Loyiha teglari (vergul bilan)
+    max_projects: CV dagi loyihalar limiti
+    template: Shablon
+    template_help: Shu lavozim CV larida qaysi profil atributlari chiqishini tanlang.
+    include: Qoʻshish
+    required: Majburiy
+    access_rules: Kirish qoidalari
+    access_rules_help: Barcha qoidalar bajarilishi kerak (VA). Ommaviy boʻlmasa va qoida boʻlmasa, har qanday tizimga kirgan foydalanuvchi koʻradi.
+    operator: Operator
+    compare_value: Taqqoslash qiymati
+    add_rule: Qoida qoʻshish
+    remove_rule: Olib tashlash
+    rule_attribute: Atribut
+    discussion: Muhokama
+    discussion_message: Xabar
+    post: Yuborish
+    no_posts: Hali xabar yoʻq.
+    flash:
+        created: Lavozim yaratildi.
+        updated: Lavozim yangilandi.
+        deleted: Tanlangan lavozimlar oʻchirildi.
+        duplicated: Lavozimdan nusxa olindi.
+        select_one: Faqat bitta qatorni tanlang.
+        in_use: Baʼzi lavozimlarni oʻchirib boʻlmaydi.
+        conflict: Bu lavozim boshqa vkladkada oʻzgargan. Qayta yuklang.
+        posted: Xabar yuborildi.
 attribute:
     heading: Atributlar kutubxonasi
     name: Nom
     category: Turkum
+    category_all: Barcha turkumlar
+    category_placeholder: Turkumni tanlang
     type: Tur
+    types:
+        string: Matn
+        text: Uzun matn
+        numeric: Raqam
+        boolean: Ha/yoʻq
+        date: Sana
+        period: Davr
+        choice: Tanlov
+        image: Rasm URL
     built_in: Tizim
+    description: Tavsif
+    options: Variantlar (har qatorga bitta)
+    options_required: Bu tur uchun kamida bitta variant yozing.
+    filter_prefix: Nom prefiksi
+    filter: Filtrlash
+    create: Yaratish
+    edit: Tahrirlash
+    delete: Oʻchirish
+    save: Saqlash
+    cancel: Bekor qilish
+    yes: ha
+    no: yoʻq
+    confirm_delete: Tanlangan atributlar oʻchirilsinmi?
+    unique_name: Bu nomdagi atribut allaqachon bor.
+    flash:
+        created: Atribut yaratildi.
+        updated: Atribut yangilandi.
+        deleted: Tanlangan atributlar oʻchirildi.
+        select_one: Faqat bitta qatorni tanlang.
+        builtin_locked: Tizim atributlarini oʻzgartirib yoki oʻchirib boʻlmaydi.
+        in_use: Baʼzi atributlar ishlatilmoqda, oʻchirib boʻlmaydi.
+        conflict: Bu atribut boshqa vkladkada oʻzgargan. Qayta yuklang.
 cv:
     heading: CV lar
     candidate: Nomzod

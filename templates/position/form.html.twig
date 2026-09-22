@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ position.id ? 'position.edit'|trans : 'position.create'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ position.id ? 'position.edit'|trans : 'position.create'|trans }}</h1>
+
+    {{ form_start(form) }}
+        <div class="row">
+            <div class="col-lg-6">
+                {{ form_row(form.title) }}
+                {{ form_row(form.shortDescription) }}
+                {{ form_row(form.company) }}
+                {{ form_row(form.level) }}
+                {{ form_row(form.isPublic) }}
+                {{ form_row(form.projectTagsText) }}
+                {{ form_row(form.maxProjects) }}
+                {{ form_row(form.version) }}
+            </div>
+        </div>
+
+        <h2 class="h5 mt-4">{{ 'position.template'|trans }}</h2>
+        <p class="text-muted small">{{ 'position.template_help'|trans }}</p>
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>{{ 'position.include'|trans }}</th>
+                        <th>{{ 'attribute.name'|trans }}</th>
+                        <th>{{ 'attribute.type'|trans }}</th>
+                        <th>{{ 'position.required'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if library is empty %}
+                        <tr>
+                            <td colspan="4" class="text-muted">{{ 'table.empty'|trans }}</td>
+                        </tr>
+                    {% endif %}
+                    {% for attribute in library %}
+                        <tr>
+                            <td>
+                                <input class="form-check-input" type="checkbox" name="attribute_ids[]" value="{{ attribute.id }}" {{ attribute.id in selectedIds ? 'checked' }}>
+                            </td>
+                            <td>{{ attribute.name }}</td>
+                            <td>{{ ('attribute.types.' ~ attribute.type)|trans }}</td>
+                            <td>
+                                <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    name="attribute_required[{{ attribute.id }}]"
+                                    value="1"
+                                    {% if requiredById[attribute.id] is defined %}{{ requiredById[attribute.id] ? 'checked' }}{% else %}checked{% endif %}
+                                >
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h2 class="h5 mt-4">{{ 'position.access_rules'|trans }}</h2>
+        <p class="text-muted small">{{ 'position.access_rules_help'|trans }}</p>
+        <div data-controller="collection">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>{{ 'attribute.name'|trans }}</th>
+                            <th>{{ 'position.operator'|trans }}</th>
+                            <th>{{ 'position.compare_value'|trans }}</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody data-collection-target="list">
+                        {% for index, rule in rules %}
+                            {% include 'position/_rule_row.html.twig' with { index: index, rule: rule, library: library, operators: operators } %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <template>
+                {% include 'position/_rule_row.html.twig' with { index: '__index__', rule: { attributeId: '', operator: 'eq', compareValue: '' }, library: library, operators: operators } %}
+            </template>
+            <button type="button" class="btn btn-outline-secondary btn-sm" data-action="collection#add">{{ 'position.add_rule'|trans }}</button>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">{{ 'attribute.save'|trans }}</button>
+            <a class="btn btn-outline-secondary" href="{{ path('app_position_index') }}">{{ 'attribute.cancel'|trans }}</a>
+        </div>
+    {{ form_end(form) }}
+{% endblock %}

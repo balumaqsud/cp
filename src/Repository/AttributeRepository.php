@@ -42,6 +42,23 @@ class AttributeRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<int> $ids
+     * @return list<Attribute>
+     */
+    public function findByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return list<Attribute>
      */
     public function findBuiltIns(): array

@@ -5,23 +5,56 @@
 {% block body %}
     <h1 class="h4 mb-3">{{ 'nav.positions'|trans }}</h1>
 
-    {% include 'partials/_toolbar.html.twig' %}
+    <form method="post" action="{{ path('app_position_bulk') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('position_bulk') }}">
 
-    {% set rows = [] %}
-    {% for position in positions %}
-        {% set rows = rows|merge([{
-            id: position.id,
-            cells: [
-                position.title,
-                position.company ?? '—',
-                position.level ?? '—',
-                position.public ? 'yes' : 'no',
-            ]
-        }]) %}
-    {% endfor %}
+        {% if canManage %}
+            {% include 'partials/_toolbar.html.twig' with {
+                create_url: path('app_position_new'),
+                create_label: 'position.create',
+                actions: [
+                    { value: 'edit', label: 'position.edit' },
+                    { value: 'duplicate', label: 'position.duplicate' },
+                    { value: 'delete', label: 'position.delete', class: 'btn-outline-danger', confirm: 'position.confirm_delete'|trans },
+                ],
+            } %}
+        {% endif %}
 
-    {% include 'partials/_data_table.html.twig' with {
-        headers: ['position.title', 'position.company', 'position.level', 'position.public'],
-        rows: rows,
-    } %}
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-nowrap" style="width: 2rem;">
+                            <span class="visually-hidden">{{ 'table.select'|trans }}</span>
+                        </th>
+                        <th>{{ 'position.title'|trans }}</th>
+                        <th>{{ 'position.company'|trans }}</th>
+                        <th>{{ 'position.level'|trans }}</th>
+                        <th>{{ 'position.public'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if positions is empty %}
+                        <tr>
+                            <td colspan="5" class="text-muted">{{ 'table.empty'|trans }}</td>
+                        </tr>
+                    {% else %}
+                        {% for position in positions %}
+                            <tr>
+                                <td>
+                                    <input class="form-check-input" type="checkbox" name="ids[]" value="{{ position.id }}" {{ not canManage ? 'disabled' }}>
+                                </td>
+                                <td>
+                                    <a href="{{ path('app_position_show', {id: position.id}) }}">{{ position.title }}</a>
+                                </td>
+                                <td>{{ position.company ?? '—' }}</td>
+                                <td>{{ position.level ?? '—' }}</td>
+                                <td>{{ position.public ? 'attribute.yes'|trans : 'attribute.no'|trans }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </form>
 {% endblock %}

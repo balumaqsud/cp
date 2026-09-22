@@ -17,15 +17,34 @@ final class PositionAccessEvaluator
     ) {
     }
 
-    /**
-     * Recruiter/admin bypass access filters. Guests only see public positions (caller must check).
-     */
     public function canAccess(User $user, Position $position, bool $staffBypass): bool
     {
         if ($staffBypass && $user->isRecruiter()) {
             return true;
         }
 
+        return $this->passesRules($position, $this->attributeValues->findIndexedByAttributeId($user));
+    }
+
+    /**
+     * @param list<Position> $positions
+     * @return list<Position>
+     */
+    public function visibleTo(User $user, array $positions): array
+    {
+        $values = $this->attributeValues->findIndexedByAttributeId($user);
+
+        return array_values(array_filter(
+            $positions,
+            fn (Position $position): bool => $this->passesRules($position, $values),
+        ));
+    }
+
+    /**
+     * @param array<int, mixed> $valuesByAttributeId
+     */
+    private function passesRules(Position $position, array $valuesByAttributeId): bool
+    {
         if ($position->isPublic()) {
             return true;
         }
@@ -35,10 +54,8 @@ final class PositionAccessEvaluator
             return true;
         }
 
-        $values = $this->attributeValues->findIndexedByAttributeId($user);
-
         foreach ($rules as $rule) {
-            if (!$this->matches($rule, $values)) {
+            if (!$this->matches($rule, $valuesByAttributeId)) {
                 return false;
             }
         }

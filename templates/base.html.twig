@@ -79,7 +79,7 @@
                 {% set alertClass = type == 'error' or type == 'danger' ? 'danger' : type %}
                 {% for message in messages %}
                     <div class="alert alert-{{ alertClass }} alert-dismissible fade show" role="alert">
-                        {{ message }}
+                        {{ message|trans }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 {% endfor %}

@@ -1,0 +1,23 @@
+<tr data-collection-target="row">
+    <td>
+        <select class="form-select form-select-sm" name="rules[{{ index }}][attributeId]">
+            <option value="">{{ 'position.rule_attribute'|trans }}</option>
+            {% for attribute in library %}
+                <option value="{{ attribute.id }}" {{ rule.attributeId|default('') == attribute.id ? 'selected' }}>{{ attribute.name }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <select class="form-select form-select-sm" name="rules[{{ index }}][operator]">
+            {% for label, value in operators %}
+                <option value="{{ value }}" {{ rule.operator|default('eq') == value ? 'selected' }}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td>
+        <input class="form-control form-control-sm" type="text" name="rules[{{ index }}][compareValue]" value="{{ rule.compareValue is same as(true) ? 'true' : (rule.compareValue is same as(false) ? 'false' : rule.compareValue|default('')) }}">
+    </td>
+    <td>
+        <button type="button" class="btn btn-outline-danger btn-sm" data-action="collection#remove">{{ 'position.remove_rule'|trans }}</button>
+    </td>
+</tr>

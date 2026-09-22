@@ -24,9 +24,12 @@ class DiscussionPostRepository extends ServiceEntityRepository
      */
     public function findByPositionChronological(Position $position): array
     {
-        return $this->findBy(
-            ['position' => $position],
-            ['createdAt' => 'ASC']
-        );
+        return $this->createQueryBuilder('post')
+            ->innerJoin('post.author', 'author')->addSelect('author')
+            ->andWhere('post.position = :position')
+            ->setParameter('position', $position)
+            ->orderBy('post.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 }

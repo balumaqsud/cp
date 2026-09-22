@@ -52,11 +52,33 @@ final class PositionService
     /**
      * @param list<int> $attributeIds
      * @param array<int, bool> $requiredById
+     * @param list<array{attributeId?: int, operator?: string, compareValue?: mixed}> $rules
+     * @param array<int, \App\Entity\Attribute> $attributesById
+     */
+    public function applyTemplate(
+        Position $position,
+        array $attributeIds,
+        array $requiredById,
+        array $rules,
+        array $attributesById,
+    ): void {
+        $this->syncAttributes($position, $attributeIds, $requiredById, $attributesById);
+        $this->syncAccessRules($position, $rules, $attributesById);
+        $position->touch();
+    }
+
+    /**
+     * @param list<int> $attributeIds
+     * @param array<int, bool> $requiredById
      */
     public function syncAttributes(Position $position, array $attributeIds, array $requiredById, array $attributesById): void
     {
         foreach ($position->getPositionAttributes()->toArray() as $existing) {
             $position->removePositionAttribute($existing);
+        }
+
+        if ($position->getId() !== null) {
+            $this->entityManager->flush();
         }
 
         $sort = 0;
@@ -81,6 +103,10 @@ final class PositionService
     {
         foreach ($position->getAccessRules()->toArray() as $existing) {
             $position->removeAccessRule($existing);
+        }
+
+        if ($position->getId() !== null) {
+            $this->entityManager->flush();
         }
 
         foreach ($rules as $ruleData) {

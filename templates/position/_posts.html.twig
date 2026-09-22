@@ -1,0 +1,17 @@
+{% if posts is empty %}
+    <p class="text-muted mb-0">{{ 'position.no_posts'|trans }}</p>
+{% else %}
+    <ol class="list-unstyled mb-0">
+        {% for post in posts %}
+            <li class="mb-3 pb-3 border-bottom">
+                <div class="small text-muted mb-1">
+                    {{ post.author ? post.author.name : '—' }}
+                    · {{ post.createdAt ? post.createdAt|date('Y-m-d H:i') : '' }}
+                </div>
+                <div class="markdown-body">
+                    {{ post.content|markdown_to_html }}
+                </div>
+            </li>
+        {% endfor %}
+    </ol>
+{% endif %}

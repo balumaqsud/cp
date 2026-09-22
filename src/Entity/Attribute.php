@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use App\Enum\AttributeType;
 use App\Repository\AttributeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AttributeRepository::class)]
 #[ORM\Table(name: 'attributes')]
-#[UniqueEntity(fields: ['name'], message: 'An attribute with this name already exists.')]
+#[UniqueEntity(fields: ['name'], message: 'attribute.unique_name')]
 class Attribute
 {
     #[ORM\Id]
@@ -22,12 +24,16 @@ class Attribute
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank]
+    #[Assert\Length(max: 255)]
     private string $name;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank]
+    #[Assert\Choice(callback: [AttributeType::class, 'values'])]
     private string $type;
 
     #[ORM\Column]

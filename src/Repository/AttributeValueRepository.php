@@ -34,6 +34,7 @@ class AttributeValueRepository extends ServiceEntityRepository
     public function findIndexedByAttributeId(User $user): array
     {
         $rows = $this->createQueryBuilder('v')
+            ->innerJoin('v.attribute', 'a')->addSelect('a')
             ->andWhere('v.user = :user')
             ->setParameter('user', $user)
             ->getQuery()

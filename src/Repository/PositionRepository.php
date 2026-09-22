@@ -92,10 +92,48 @@ class PositionRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return list<Position>
+     */
+    public function findAllWithAccessGraph(): array
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'a')->addSelect('a')
+            ->orderBy('p.updatedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findOneWithTemplate(int $id): ?Position
+    {
+        $position = $this->createQueryBuilder('p')
+            ->leftJoin('p.positionAttributes', 'pa')->addSelect('pa')
+            ->leftJoin('pa.attribute', 'attr')->addSelect('attr')
+            ->andWhere('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if ($position === null) {
+            return null;
+        }
+
+        $this->createQueryBuilder('p')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'ruleAttr')->addSelect('ruleAttr')
+            ->andWhere('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        return $position;
+    }
+
+    /**
      * @param list<int|string> $ids
      * @return list<Position>
      */
-    private function findByIds(array $ids): array
+    public function findByIds(array $ids): array
     {
         if ($ids === []) {
             return [];

@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ attribute.id ? 'attribute.edit'|trans : 'attribute.create'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ attribute.id ? 'attribute.edit'|trans : 'attribute.create'|trans }}</h1>
+
+    <div class="row">
+        <div class="col-lg-6">
+            {{ form_start(form) }}
+                {{ form_row(form.name) }}
+                {{ form_row(form.description) }}
+                {{ form_row(form.category) }}
+                {{ form_row(form.type) }}
+                {{ form_row(form.optionsText) }}
+                {{ form_row(form.version) }}
+                <button type="submit" class="btn btn-primary">{{ 'attribute.save'|trans }}</button>
+                <a class="btn btn-outline-secondary" href="{{ path('app_attribute_index') }}">{{ 'attribute.cancel'|trans }}</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

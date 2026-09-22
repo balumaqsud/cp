@@ -5,24 +5,56 @@
 {% block body %}
     <h1 class="h4 mb-3">{{ 'attribute.heading'|trans }}</h1>
 
-    {% include 'partials/_toolbar.html.twig' %}
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <label class="visually-hidden" for="attribute-prefix">{{ 'attribute.filter_prefix'|trans }}</label>
+            <input id="attribute-prefix" class="form-control form-control-sm" type="search" name="prefix" value="{{ prefix }}" placeholder="{{ 'attribute.filter_prefix'|trans }}">
+        </div>
+        <div class="col-md-4">
+            <label class="visually-hidden" for="attribute-category">{{ 'attribute.category'|trans }}</label>
+            <select id="attribute-category" class="form-select form-select-sm" name="category">
+                <option value="">{{ 'attribute.category_all'|trans }}</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {{ categoryId == category.id ? 'selected' }}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">{{ 'attribute.filter'|trans }}</button>
+        </div>
+    </form>
 
-    {% set rows = [] %}
-    {% for attribute in attributes %}
-        {% set rows = rows|merge([{
-            id: attribute.id,
-            disabled: attribute.builtIn,
-            cells: [
-                attribute.name,
-                attribute.category ? attribute.category.name : '—',
-                attribute.type,
-                attribute.builtIn ? 'yes' : 'no',
-            ]
-        }]) %}
-    {% endfor %}
+    <form method="post" action="{{ path('app_attribute_bulk') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('attribute_bulk') }}">
 
-    {% include 'partials/_data_table.html.twig' with {
-        headers: ['attribute.name', 'attribute.category', 'attribute.type', 'attribute.built_in'],
-        rows: rows,
-    } %}
+        {% if canManage %}
+            {% include 'partials/_toolbar.html.twig' with {
+                create_url: path('app_attribute_new'),
+                create_label: 'attribute.create',
+                actions: [
+                    { value: 'edit', label: 'attribute.edit' },
+                    { value: 'delete', label: 'attribute.delete', class: 'btn-outline-danger', confirm: 'attribute.confirm_delete'|trans },
+                ],
+            } %}
+        {% endif %}
+
+        {% set rows = [] %}
+        {% for attribute in attributes %}
+            {% set rows = rows|merge([{
+                id: attribute.id,
+                disabled: not canManage or attribute.builtIn,
+                cells: [
+                    attribute.name,
+                    attribute.category ? attribute.category.name : '—',
+                    ('attribute.types.' ~ attribute.type)|trans,
+                    attribute.builtIn ? 'attribute.yes'|trans : 'attribute.no'|trans,
+                ]
+            }]) %}
+        {% endfor %}
+
+        {% include 'partials/_data_table.html.twig' with {
+            headers: ['attribute.name', 'attribute.category', 'attribute.type', 'attribute.built_in'],
+            rows: rows,
+        } %}
+    </form>
 {% endblock %}

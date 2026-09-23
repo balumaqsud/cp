@@ -11,6 +11,30 @@ nav:
     login: Kirish
     register: Roʻyxatdan oʻtish
     logout: Chiqish
+auth:
+    name: Ism
+    email: Email
+    password: Parol
+    password_confirm: Parolni tasdiqlang
+    role: Rol
+    role_placeholder: Rolni tanlang
+    remember_me: Esda tutsin
+    google: Google orqali davom etish
+    github: GitHub orqali davom etish
+    create_account: Hisob yaratish
+    need_account: Roʻyxatdan oʻtish
+    have_account: Hisobingiz bormi?
+    choose_role: Rolni tanlang
+    choose_role_help: Platformadan qanday foydalanishni tanlang. Keyinroq administrator boshqa rol qoʻshishi mumkin.
+    continue: Davom etish
+    flash:
+        exists: Bu email bilan foydalanuvchi allaqachon bor.
+        invalid: Login yoki parol notoʻgʻri.
+        blocked: Bu hisob bloklangan.
+        password_mismatch: Parollar mos emas.
+        choose_role: Nomzod yoki Rekruterni tanlang.
+        oauth_email: Provayder email bermadi. Email ruxsatini yoqing va qayta urinib koʻring.
+        oauth_provider: Nomaʼlum OAuth provayder.
 locale:
     en: EN
     uz: UZ

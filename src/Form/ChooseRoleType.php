@@ -14,11 +14,12 @@ final class ChooseRoleType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('role', ChoiceType::class, [
+            'label' => 'auth.role',
             'choices' => [
-                'Candidate' => User::ROLE_CANDIDATE,
-                'Recruiter' => User::ROLE_RECRUITER,
+                'user.role.ROLE_CANDIDATE' => User::ROLE_CANDIDATE,
+                'user.role.ROLE_RECRUITER' => User::ROLE_RECRUITER,
             ],
-            'placeholder' => 'Choose a role',
+            'placeholder' => 'auth.role_placeholder',
         ]);
     }
 }

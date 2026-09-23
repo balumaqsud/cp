@@ -20,11 +20,12 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class SecurityController extends AbstractController
 {
     #[Route('/register', name: 'app_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, SecurityService $securityService): Response
+    public function register(Request $request, SecurityService $securityService, TranslatorInterface $translator): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -40,7 +41,7 @@ class SecurityController extends AbstractController
 
                 return $this->redirectToRoute('app_login');
             } catch (AuthException $e) {
-                $form->get('email')->addError(new FormError($e->getMessage()));
+                $form->get('email')->addError(new FormError($translator->trans($e->getMessage())));
             }
         }
 
@@ -50,7 +51,7 @@ class SecurityController extends AbstractController
     }
 
     #[Route('/login', name: 'app_login', methods: ['GET', 'POST'])]
-    public function login(Request $request, SecurityService $securityService, Security $security): Response
+    public function login(Request $request, SecurityService $securityService, Security $security, TranslatorInterface $translator): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_home');
@@ -67,7 +68,7 @@ class SecurityController extends AbstractController
 
                 return $this->redirectToRoute('app_home');
             } catch (AuthException $e) {
-                $form->addError(new FormError($e->getMessage()));
+                $form->addError(new FormError($translator->trans($e->getMessage())));
             }
         }
 

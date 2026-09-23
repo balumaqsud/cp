@@ -1,0 +1,4 @@
+auth:
+    flash:
+        password_mismatch: Passwords do not match.
+        choose_role: Please choose Candidate or Recruiter.

@@ -22,13 +22,13 @@ final class OAuthUserService
     {
         $email = mb_strtolower(trim($email));
         if ($email === '') {
-            throw new CustomUserMessageAuthenticationException('The provider did not share an email address. Allow email access and try again.');
+            throw new CustomUserMessageAuthenticationException('auth.flash.oauth_email');
         }
 
         $user = $this->users->findOneByEmail($email);
         if ($user !== null) {
             if ($user->isBlocked()) {
-                throw new CustomUserMessageAccountStatusException('This account is blocked.');
+                throw new CustomUserMessageAccountStatusException('auth.flash.blocked');
             }
 
             return $user;

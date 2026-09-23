@@ -46,7 +46,7 @@ final class OAuthAuthenticator extends OAuth2Authenticator
         $route = $request->attributes->get('_route');
         $clientKey = self::CHECK_ROUTES[$route] ?? null;
         if ($clientKey === null) {
-            throw new CustomUserMessageAuthenticationException('Unknown OAuth provider.');
+            throw new CustomUserMessageAuthenticationException('auth.flash.oauth_provider');
         }
 
         $client = $this->clientRegistry->getClient($clientKey);

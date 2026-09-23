@@ -1,0 +1,4 @@
+auth:
+    flash:
+        password_mismatch: Parollar mos emas.
+        choose_role: Nomzod yoki Rekruterni tanlang.

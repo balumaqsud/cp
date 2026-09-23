@@ -11,6 +11,30 @@ nav:
     login: Log in
     register: Sign up
     logout: Log out
+auth:
+    name: Name
+    email: Email
+    password: Password
+    password_confirm: Confirm password
+    role: Role
+    role_placeholder: Choose a role
+    remember_me: Remember me
+    google: Continue with Google
+    github: Continue with GitHub
+    create_account: Create account
+    need_account: Sign up
+    have_account: Already have an account?
+    choose_role: Choose a role
+    choose_role_help: Pick how you will use the platform. An administrator can add another role later.
+    continue: Continue
+    flash:
+        exists: A user with this email already exists.
+        invalid: Invalid credentials.
+        blocked: This account is blocked.
+        password_mismatch: Passwords do not match.
+        choose_role: Please choose Candidate or Recruiter.
+        oauth_email: The provider did not share an email address. Allow email access and try again.
+        oauth_provider: Unknown OAuth provider.
 locale:
     en: EN
     uz: UZ

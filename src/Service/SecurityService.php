@@ -25,7 +25,7 @@ final class SecurityService
     {
         $email = mb_strtolower(trim($registrationDTO->email));
         if ($this->users->findOneByEmail($email) !== null) {
-            throw new AuthException('User with this email already exists.');
+            throw new AuthException('auth.flash.exists');
         }
 
         $user = new User();
@@ -45,15 +45,15 @@ final class SecurityService
         $email = mb_strtolower(trim($loginDTO->email));
         $user = $this->users->findOneByEmail($email);
         if ($user === null || $user->getPassword() === null) {
-            throw new AuthException('Invalid credentials.');
+            throw new AuthException('auth.flash.invalid');
         }
 
         if (!$this->userPasswordHasher->isPasswordValid($user, $loginDTO->password)) {
-            throw new AuthException('Invalid credentials.');
+            throw new AuthException('auth.flash.invalid');
         }
 
         if ($user->isBlocked()) {
-            throw new AuthException('This account is blocked.');
+            throw new AuthException('auth.flash.blocked');
         }
 
         return $user;

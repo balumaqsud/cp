@@ -25,7 +25,7 @@ final class RegistrationDTO
     #[Assert\NotBlank]
     #[Assert\EqualTo(
         propertyPath: 'password',
-        message: 'Passwords do not match.',
+        message: 'auth.flash.password_mismatch',
     )]
     public string $passwordConfirm = '';
 
@@ -34,7 +34,7 @@ final class RegistrationDTO
             User::ROLE_CANDIDATE,
             User::ROLE_RECRUITER,
         ],
-        message: 'Please choose Candidate or Recruiter.',
+        message: 'auth.flash.choose_role',
     )]
     public string $role = User::ROLE_CANDIDATE;
 }

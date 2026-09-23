@@ -18,7 +18,7 @@ final class UserChecker implements UserCheckerInterface
         }
 
         if ($user->isBlocked()) {
-            throw new CustomUserMessageAccountStatusException('This account is blocked.');
+            throw new CustomUserMessageAccountStatusException('auth.flash.blocked');
         }
     }
 

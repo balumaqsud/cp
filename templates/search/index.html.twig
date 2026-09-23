@@ -5,38 +5,47 @@
 {% block body %}
     <h1 class="h4 mb-3">{{ 'search.heading'|trans }}</h1>
 
-    {% if query is empty %}
+    {% if query is empty and tag is empty %}
         <p class="text-muted">{{ 'search.prompt'|trans }}</p>
     {% else %}
+        {% if tag is not empty %}
+            <p class="text-muted">{{ 'search.tag'|trans({ '%tag%': tag }) }}</p>
+        {% endif %}
+
         <h2 class="h6 mt-4">{{ 'search.positions'|trans }}</h2>
-        {% set positionRows = [] %}
-        {% for position in results.positions %}
-            {% set positionRows = positionRows|merge([{
-                id: position.id,
-                cells: [position.title, position.company ?? '—', position.level ?? '—']
-            }]) %}
-        {% endfor %}
-        {% include 'partials/_data_table.html.twig' with {
-            headers: ['position.title', 'position.company', 'position.level'],
-            rows: positionRows,
+        {% include 'position/_link_table.html.twig' with {
+            positions: results.positions,
+            empty_label: 'search.empty',
         } %}
 
         {% if is_granted('CV_LIST') %}
             <h2 class="h6 mt-4">{{ 'search.cvs'|trans }}</h2>
-            {% set cvRows = [] %}
-            {% for cv in results.cvs %}
-                {% set cvRows = cvRows|merge([{
-                    id: cv.id,
-                    cells: [
-                        cv.user ? cv.user.name : '—',
-                        cv.position ? cv.position.title : '—',
-                    ]
-                }]) %}
-            {% endfor %}
-            {% include 'partials/_data_table.html.twig' with {
-                headers: ['cv.candidate', 'cv.position'],
-                rows: cvRows,
-            } %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>{{ 'cv.candidate'|trans }}</th>
+                            <th>{{ 'cv.position'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if results.cvs is empty %}
+                            <tr>
+                                <td colspan="2" class="text-muted">{{ 'search.empty'|trans }}</td>
+                            </tr>
+                        {% else %}
+                            {% for cv in results.cvs %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ path('app_cv_show', {id: cv.id}) }}">{{ cv.user ? cv.user.name : '—' }}</a>
+                                    </td>
+                                    <td>{{ cv.position ? cv.position.title : '—' }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     {% endif %}
 {% endblock %}

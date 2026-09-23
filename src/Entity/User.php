@@ -54,13 +54,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, Project>
      */
-    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'owner')]
+    #[ORM\OneToMany(targetEntity: Project::class, mappedBy: 'owner', cascade: ['remove'])]
     private Collection $projects;
 
     /**
      * @var Collection<int, DiscussionPost>
      */
-    #[ORM\OneToMany(targetEntity: DiscussionPost::class, mappedBy: 'author')]
+    #[ORM\OneToMany(targetEntity: DiscussionPost::class, mappedBy: 'author', cascade: ['remove'])]
     private Collection $discussionPosts;
 
     /**
@@ -126,6 +126,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->roles = $roles;
 
         return $this;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function getAssignedRoles(): array
+    {
+        return array_values(array_filter(
+            $this->roles,
+            static fn (mixed $role): bool => \is_string($role) && $role !== '' && $role !== 'ROLE_USER',
+        ));
     }
 
     public function hasAssignedRole(): bool

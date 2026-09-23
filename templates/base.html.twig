@@ -46,6 +46,11 @@
                                 <a class="nav-link" href="{{ path('app_cv_index') }}">{{ 'nav.cvs'|trans }}</a>
                             </li>
                         {% endif %}
+                        {% if is_granted('USER_MANAGE') %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('app_admin_users') }}">{{ 'nav.users'|trans }}</a>
+                            </li>
+                        {% endif %}
                         {% if app.user %}
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ path('app_profile') }}">{{ 'nav.profile'|trans }}</a>

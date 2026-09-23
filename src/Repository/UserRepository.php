@@ -38,9 +38,50 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     public function countWithRole(string $role): int
     {
         return (int) $this->getEntityManager()->getConnection()->fetchOne(
-            'SELECT COUNT(*) FROM users WHERE roles::jsonb ? :role',
+            'SELECT COUNT(*) FROM users WHERE jsonb_exists(roles::jsonb, :role)',
             ['role' => $role],
         );
+    }
+
+    public function countWithAnyRole(string ...$roles): int
+    {
+        if ($roles === []) {
+            return 0;
+        }
+
+        $clauses = [];
+        $params = [];
+        foreach (array_values($roles) as $i => $role) {
+            $key = 'role'.$i;
+            $clauses[] = 'jsonb_exists(roles::jsonb, :'.$key.')';
+            $params[$key] = $role;
+        }
+
+        return (int) $this->getEntityManager()->getConnection()->fetchOne(
+            'SELECT COUNT(*) FROM users WHERE '.implode(' OR ', $clauses),
+            $params,
+        );
+    }
+
+    /**
+     * @param list<int> $ids
+     * @return list<User>
+     */
+    public function findByIds(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<User> $rows */
+        $rows = $this->createQueryBuilder('u')
+            ->andWhere('u.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->orderBy('u.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+
+        return $rows;
     }
 
     /**

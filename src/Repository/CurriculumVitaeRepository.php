@@ -116,7 +116,7 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
         return (int) $this->createQueryBuilder('cv')
             ->select('COUNT(cv.id)')
             ->andWhere('cv.status = :status')
-            ->andWhere('cv.createdAt >= :since')
+            ->andWhere('cv.updatedAt >= :since')
             ->setParameter('status', CvStatus::Published->value)
             ->setParameter('since', $since)
             ->getQuery()
@@ -131,6 +131,66 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
     /**
      * @return list<CurriculumVitae>
      */
+    public function findPublishedByTag(string $tag): array
+    {
+        $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            <<<'SQL'
+            SELECT cv.id
+            FROM cvs cv
+            INNER JOIN positions p ON p.id = cv.position_id
+            WHERE cv.status = :status
+              AND (
+                  EXISTS (
+                      SELECT 1
+                      FROM jsonb_array_elements_text(p.project_tags::jsonb) t
+                      WHERE lower(t) = :tag
+                  )
+                  OR EXISTS (
+                      SELECT 1
+                      FROM projects pr,
+                           jsonb_array_elements_text(pr.technology_tags::jsonb) t
+                      WHERE pr.owner_id = cv.user_id
+                        AND lower(t) = :tag
+                  )
+              )
+            ORDER BY cv.updated_at DESC
+            SQL,
+            ['status' => CvStatus::Published->value, 'tag' => mb_strtolower($tag)],
+        );
+
+        if ($ids === []) {
+            return [];
+        }
+
+        /** @var list<CurriculumVitae> $rows */
+        $rows = $this->createQueryBuilder('cv')
+            ->innerJoin('cv.user', 'u')->addSelect('u')
+            ->innerJoin('cv.position', 'p')->addSelect('p')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'ra')->addSelect('ra')
+            ->andWhere('cv.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        $byId = [];
+        foreach ($rows as $row) {
+            $byId[$row->getId()] = $row;
+        }
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            if (isset($byId[(int) $id])) {
+                $ordered[] = $byId[(int) $id];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * @return list<CurriculumVitae>
+     */
     public function searchPublishedFullText(string $query): array
     {
         $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
@@ -140,7 +200,10 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
             INNER JOIN users u ON u.id = cv.user_id
             INNER JOIN positions p ON p.id = cv.position_id
             WHERE cv.status = :status
-              AND to_tsvector('simple', coalesce(u.name, '') || ' ' || coalesce(p.title, '') || ' ' || coalesce(p.short_description, ''))
+              AND to_tsvector(
+                    'simple',
+                    coalesce(u.name, '') || ' ' || coalesce(p.title, '') || ' ' || coalesce(p.short_description, '') || ' ' || coalesce(p.project_tags::text, '')
+                  )
                   @@ plainto_tsquery('simple', :q)
             ORDER BY cv.updated_at DESC
             SQL,
@@ -155,6 +218,8 @@ class CurriculumVitaeRepository extends ServiceEntityRepository
         $rows = $this->createQueryBuilder('cv')
             ->innerJoin('cv.user', 'u')->addSelect('u')
             ->innerJoin('cv.position', 'p')->addSelect('p')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'ra')->addSelect('ra')
             ->andWhere('cv.id IN (:ids)')
             ->setParameter('ids', $ids)
             ->getQuery()

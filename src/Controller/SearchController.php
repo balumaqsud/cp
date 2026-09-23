@@ -17,13 +17,16 @@ class SearchController extends AbstractController
     public function search(Request $request, SearchService $searchService): Response
     {
         $query = trim($request->query->getString('q'));
+        $tag = trim($request->query->getString('tag'));
         $user = $this->getUser();
 
         return $this->render('search/index.html.twig', [
             'query' => $query,
+            'tag' => $tag,
             'results' => $searchService->search(
                 $query,
                 $user instanceof User ? $user : null,
+                $tag,
             ),
         ]);
     }

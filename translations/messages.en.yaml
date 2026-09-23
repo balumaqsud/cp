@@ -4,6 +4,7 @@ nav:
     positions: Positions
     attributes: Attributes
     cvs: CVs
+    users: Users
     profile: Profile
     search: Search
     search_placeholder: Search…
@@ -172,8 +173,44 @@ search:
     positions: Positions
     cvs: CVs
     empty: No matches.
-    prompt: Type a query in the header.
+    prompt: Type a query in the header or pick a tag on the home page.
+    tag: 'Tag: %tag%'
 home:
-    title: Course project
-    lead: App is running.
-    signed_in: 'Signed in as %email%.'
+    title: CV management
+    lead: Open positions, recent activity, and platform stats.
+    latest: Latest positions
+    popular: Popular positions
+    tags: Tags
+    stats: Stats
+    stats_cvs24h: CVs in the last 24 hours
+    stats_cvs: Published CVs
+    stats_positions: Positions
+    stats_candidates: Candidates
+    stats_recruiters: Recruiters
+user:
+    heading: Users
+    name: Name
+    email: Email
+    roles: Roles
+    blocked: Blocked
+    created: Created
+    block: Block
+    unblock: Unblock
+    assign: Assign role
+    remove_role: Remove role
+    delete: Delete
+    confirm_delete: Delete the selected users?
+    role:
+        ROLE_CANDIDATE: Candidate
+        ROLE_RECRUITER: Recruiter
+        ROLE_ADMIN: Admin
+    flash:
+        select_one: Select at least one row.
+        blocked: Selected users were blocked.
+        unblocked: Selected users were unblocked.
+        role_assigned: Role assigned.
+        role_removed: Role removed.
+        deleted: Selected users were deleted.
+        cannot_self: You cannot block or delete your own account.
+        invalid_role: Choose a valid role.
+        in_use: One or more users cannot be deleted.

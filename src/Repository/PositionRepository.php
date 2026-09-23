@@ -75,13 +75,47 @@ class PositionRepository extends ServiceEntityRepository
     /**
      * @return list<Position>
      */
+    public function findLatestManaged(int $limit = 10): array
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.updatedAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return list<Position>
+     */
+    public function findByTag(string $tag): array
+    {
+        $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            <<<'SQL'
+            SELECT id
+            FROM positions
+            WHERE EXISTS (
+                SELECT 1
+                FROM jsonb_array_elements_text(project_tags::jsonb) t
+                WHERE lower(t) = :tag
+            )
+            ORDER BY updated_at DESC
+            SQL,
+            ['tag' => mb_strtolower($tag)],
+        );
+
+        return $this->findByIds($ids);
+    }
+
+    /**
+     * @return list<Position>
+     */
     public function searchFullText(string $query): array
     {
         $ids = $this->getEntityManager()->getConnection()->fetchFirstColumn(
             <<<'SQL'
             SELECT id
             FROM positions
-            WHERE to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(short_description, ''))
+            WHERE to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(short_description, '') || ' ' || coalesce(project_tags::text, ''))
                   @@ plainto_tsquery('simple', :q)
             ORDER BY updated_at DESC
             SQL,
@@ -141,6 +175,8 @@ class PositionRepository extends ServiceEntityRepository
 
         /** @var list<Position> $rows */
         $rows = $this->createQueryBuilder('p')
+            ->leftJoin('p.accessRules', 'r')->addSelect('r')
+            ->leftJoin('r.attribute', 'a')->addSelect('a')
             ->andWhere('p.id IN (:ids)')
             ->setParameter('ids', $ids)
             ->getQuery()

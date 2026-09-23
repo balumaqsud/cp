@@ -1,0 +1,73 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'user.heading'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ 'user.heading'|trans }}</h1>
+
+    <form method="post" action="{{ path('app_admin_users_bulk') }}">
+        <input type="hidden" name="_token" value="{{ csrf_token('admin_users') }}">
+
+        {% embed 'partials/_toolbar.html.twig' with {
+            actions: [
+                { value: 'block', label: 'user.block' },
+                { value: 'unblock', label: 'user.unblock' },
+                { value: 'assign', label: 'user.assign' },
+                { value: 'remove_role', label: 'user.remove_role' },
+                { value: 'delete', label: 'user.delete', class: 'btn-outline-danger', confirm: 'user.confirm_delete'|trans },
+            ],
+        } %}
+            {% block toolbar_extra %}
+                <label class="visually-hidden" for="user-role">{{ 'user.roles'|trans }}</label>
+                <select id="user-role" class="form-select form-select-sm" name="role" style="width: auto;">
+                    {% for role in roles %}
+                        <option value="{{ role }}">{{ ('user.role.' ~ role)|trans }}</option>
+                    {% endfor %}
+                </select>
+            {% endblock %}
+        {% endembed %}
+
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" class="text-nowrap" style="width: 2rem;">
+                            <span class="visually-hidden">{{ 'table.select'|trans }}</span>
+                        </th>
+                        <th>{{ 'user.name'|trans }}</th>
+                        <th>{{ 'user.email'|trans }}</th>
+                        <th>{{ 'user.roles'|trans }}</th>
+                        <th>{{ 'user.blocked'|trans }}</th>
+                        <th>{{ 'user.created'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if users is empty %}
+                        <tr>
+                            <td colspan="6" class="text-muted">{{ 'table.empty'|trans }}</td>
+                        </tr>
+                    {% else %}
+                        {% for account in users %}
+                            <tr>
+                                <td>
+                                    <input class="form-check-input" type="checkbox" name="ids[]" value="{{ account.id }}">
+                                </td>
+                                <td>{{ account.name }}</td>
+                                <td>{{ account.email }}</td>
+                                <td>
+                                    {% set roleLabels = [] %}
+                                    {% for role in account.assignedRoles %}
+                                        {% set roleLabels = roleLabels|merge([('user.role.' ~ role)|trans]) %}
+                                    {% endfor %}
+                                    {{ roleLabels|join(', ') ?: '—' }}
+                                </td>
+                                <td>{{ account.blocked ? 'attribute.yes'|trans : 'attribute.no'|trans }}</td>
+                                <td>{{ account.createdAt ? account.createdAt|date('Y-m-d') : '—' }}</td>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+{% endblock %}

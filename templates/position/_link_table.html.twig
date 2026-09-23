@@ -1,0 +1,28 @@
+<div class="table-responsive">
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th>{{ 'position.title'|trans }}</th>
+                <th>{{ 'position.company'|trans }}</th>
+                <th>{{ 'position.level'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if positions is empty %}
+                <tr>
+                    <td colspan="3" class="text-muted">{{ empty_label|default('table.empty')|trans }}</td>
+                </tr>
+            {% else %}
+                {% for position in positions %}
+                    <tr>
+                        <td>
+                            <a href="{{ path('app_position_show', {id: position.id}) }}">{{ position.title }}</a>
+                        </td>
+                        <td>{{ position.company ?? '—' }}</td>
+                        <td>{{ position.level ?? '—' }}</td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+        </tbody>
+    </table>
+</div>

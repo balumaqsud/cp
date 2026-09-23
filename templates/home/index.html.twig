@@ -3,15 +3,62 @@
 {% block title %}{{ 'home.title'|trans }}{% endblock %}
 
 {% block body %}
-    <div class="text-center py-5">
-        <h1>{{ 'home.title'|trans }}</h1>
-        <p class="text-muted">{{ 'home.lead'|trans }}</p>
+    <h1 class="h4 mb-2">{{ 'home.title'|trans }}</h1>
+    <p class="text-muted mb-4">{{ 'home.lead'|trans }}</p>
 
-        {% if app.user %}
-            <p>{{ 'home.signed_in'|trans({ '%email%': app.user.userIdentifier }) }}</p>
-        {% else %}
-            <a class="btn btn-primary" href="{{ path('app_login') }}">{{ 'nav.login'|trans }}</a>
-            <a class="btn btn-outline-secondary" href="{{ path('app_register') }}">{{ 'nav.register'|trans }}</a>
-        {% endif %}
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <h2 class="h6">{{ 'home.latest'|trans }}</h2>
+            {% include 'position/_link_table.html.twig' with { positions: latest } %}
+
+            <h2 class="h6 mt-4">{{ 'home.popular'|trans }}</h2>
+            {% include 'position/_link_table.html.twig' with { positions: popular } %}
+
+            <h2 class="h6 mt-4">{{ 'home.tags'|trans }}</h2>
+            {% if tagCloud is empty %}
+                <p class="text-muted">{{ 'table.empty'|trans }}</p>
+            {% else %}
+                {% set maxCount = max(tagCloud) %}
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    {% for tag, count in tagCloud %}
+                        {% set size = 0.8 + (maxCount > 0 ? count / maxCount * 0.7 : 0) %}
+                        <a
+                            class="badge rounded-pill text-bg-secondary text-decoration-none"
+                            style="font-size: {{ size }}rem"
+                            href="{{ path('app_search', {tag: tag}) }}"
+                        >{{ tag }} ({{ count }})</a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <div class="col-lg-4">
+            <h2 class="h6">{{ 'home.stats'|trans }}</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <tbody>
+                        <tr>
+                            <th scope="row">{{ 'home.stats_cvs24h'|trans }}</th>
+                            <td class="text-end">{{ stats.cvs24h }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">{{ 'home.stats_cvs'|trans }}</th>
+                            <td class="text-end">{{ stats.cvs }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">{{ 'home.stats_positions'|trans }}</th>
+                            <td class="text-end">{{ stats.positions }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">{{ 'home.stats_candidates'|trans }}</th>
+                            <td class="text-end">{{ stats.candidates }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">{{ 'home.stats_recruiters'|trans }}</th>
+                            <td class="text-end">{{ stats.recruiters }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}

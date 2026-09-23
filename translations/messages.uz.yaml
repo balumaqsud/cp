@@ -4,6 +4,7 @@ nav:
     positions: Lavozimlar
     attributes: Atributlar
     cvs: CV lar
+    users: Foydalanuvchilar
     profile: Profil
     search: Qidiruv
     search_placeholder: Qidirish…
@@ -172,8 +173,44 @@ search:
     positions: Lavozimlar
     cvs: CV lar
     empty: Mos yozuv yoʻq.
-    prompt: Sarlavhadagi qidiruvga soʻz yozing.
+    prompt: Sarlavhadagi qidiruvga soʻz yozing yoki bosh sahifadan teg tanlang.
+    tag: 'Teg: %tag%'
 home:
-    title: Kurs loyihasi
-    lead: Ilova ishlayapti.
-    signed_in: '%email% sifatida kirdingiz.'
+    title: CV boshqaruvi
+    lead: Ochiq lavozimlar, soʻnggi faollik va platforma statistikasi.
+    latest: Soʻnggi lavozimlar
+    popular: Mashhur lavozimlar
+    tags: Teglar
+    stats: Statistika
+    stats_cvs24h: Soʻnggi 24 soatdagi CV lar
+    stats_cvs: Nashr qilingan CV lar
+    stats_positions: Lavozimlar
+    stats_candidates: Nomzodlar
+    stats_recruiters: Rekruterlar
+user:
+    heading: Foydalanuvchilar
+    name: Ism
+    email: Email
+    roles: Rollar
+    blocked: Bloklangan
+    created: Yaratilgan
+    block: Bloklash
+    unblock: Blokdan chiqarish
+    assign: Rol berish
+    remove_role: Rolni olish
+    delete: Oʻchirish
+    confirm_delete: Tanlangan foydalanuvchilar oʻchirilsinmi?
+    role:
+        ROLE_CANDIDATE: Nomzod
+        ROLE_RECRUITER: Rekruter
+        ROLE_ADMIN: Admin
+    flash:
+        select_one: Kamida bitta qatorni tanlang.
+        blocked: Tanlangan foydalanuvchilar bloklandi.
+        unblocked: Tanlangan foydalanuvchilar blokdan chiqarildi.
+        role_assigned: Rol berildi.
+        role_removed: Rol olib tashlandi.
+        deleted: Tanlangan foydalanuvchilar oʻchirildi.
+        cannot_self: Oʻz hisobingizni bloklab yoki oʻchirib boʻlmaydi.
+        invalid_role: Toʻgʻri rolni tanlang.
+        in_use: Baʼzi foydalanuvchilarni oʻchirib boʻlmaydi.

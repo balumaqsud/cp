@@ -184,6 +184,19 @@ final class CvService
      * @param list<CurriculumVitae> $cvs
      * @return list<CurriculumVitae>
      */
+    public function filterVisible(User $viewer, array $cvs): array
+    {
+        if ($viewer->isAdmin()) {
+            return array_values($cvs);
+        }
+
+        return $this->filterByOwnerAccess($cvs);
+    }
+
+    /**
+     * @param list<CurriculumVitae> $cvs
+     * @return list<CurriculumVitae>
+     */
     private function filterByOwnerAccess(array $cvs): array
     {
         $ownerIds = [];

@@ -58,9 +58,9 @@ class ProjectRepository extends ServiceEntityRepository
             <<<'SQL'
             SELECT DISTINCT lower(tag) AS tag
             FROM (
-                SELECT jsonb_array_elements_text(technology_tags) AS tag FROM projects
+                SELECT jsonb_array_elements_text(technology_tags::jsonb) AS tag FROM projects
                 UNION ALL
-                SELECT jsonb_array_elements_text(project_tags) AS tag FROM positions
+                SELECT jsonb_array_elements_text(project_tags::jsonb) AS tag FROM positions
             ) t
             WHERE tag <> ''
             ORDER BY tag
@@ -79,9 +79,9 @@ class ProjectRepository extends ServiceEntityRepository
             <<<'SQL'
             SELECT lower(tag) AS tag, COUNT(*)::int AS cnt
             FROM (
-                SELECT jsonb_array_elements_text(technology_tags) AS tag FROM projects
+                SELECT jsonb_array_elements_text(technology_tags::jsonb) AS tag FROM projects
                 UNION ALL
-                SELECT jsonb_array_elements_text(project_tags) AS tag FROM positions
+                SELECT jsonb_array_elements_text(project_tags::jsonb) AS tag FROM positions
             ) t
             WHERE tag <> ''
             GROUP BY lower(tag)

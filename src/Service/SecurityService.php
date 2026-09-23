@@ -7,9 +7,11 @@ namespace App\Service;
 use App\DTO\LoginDTO;
 use App\DTO\RegistrationDTO;
 use App\Entity\User;
+use App\EventSubscriber\UserPreferenceSubscriber;
 use App\Exception\AuthException;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class SecurityService
@@ -18,6 +20,7 @@ final class SecurityService
         private readonly UserRepository $users,
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $userPasswordHasher,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -35,6 +38,7 @@ final class SecurityService
         $user->setRoles([$registrationDTO->role]);
 
         $this->entityManager->persist($user);
+        $this->applyRequestPreferences($user);
         $this->entityManager->flush();
 
         return $user;
@@ -56,6 +60,20 @@ final class SecurityService
             throw new AuthException('auth.flash.blocked');
         }
 
+        $this->applyRequestPreferences($user);
+
         return $user;
+    }
+
+    private function applyRequestPreferences(User $user): void
+    {
+        $request = $this->requestStack->getCurrentRequest();
+        if ($request === null) {
+            return;
+        }
+
+        if (UserPreferenceSubscriber::copyFromCookies($user, $request)) {
+            $this->entityManager->flush();
+        }
     }
 }

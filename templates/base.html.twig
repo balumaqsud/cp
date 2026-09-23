@@ -61,12 +61,12 @@
                         <input class="form-control form-control-sm" type="search" name="q" value="{{ app.request.query.get('q') }}" placeholder="{{ 'nav.search_placeholder'|trans }}" aria-label="{{ 'nav.search'|trans }}">
                     </form>
                     <div class="d-flex flex-wrap align-items-center gap-2">
-                        <a class="btn btn-sm {{ app.request.locale == 'en' ? 'btn-secondary' : 'btn-outline-secondary' }}" href="{{ path('app_locale', {locale: 'en'}) }}">{{ 'locale.en'|trans }}</a>
-                        <a class="btn btn-sm {{ app.request.locale == 'uz' ? 'btn-secondary' : 'btn-outline-secondary' }}" href="{{ path('app_locale', {locale: 'uz'}) }}">{{ 'locale.uz'|trans }}</a>
+                        <a class="btn btn-sm {{ app.request.locale == 'en' ? 'btn-secondary' : 'btn-outline-secondary' }}" href="{{ path('app_locale', {locale: 'en'}) }}" data-turbo="false">{{ 'locale.en'|trans }}</a>
+                        <a class="btn btn-sm {{ app.request.locale == 'uz' ? 'btn-secondary' : 'btn-outline-secondary' }}" href="{{ path('app_locale', {locale: 'uz'}) }}" data-turbo="false">{{ 'locale.uz'|trans }}</a>
                         {% if theme == 'dark' %}
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_theme', {theme: 'light'}) }}">{{ 'theme.light'|trans }}</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_theme', {theme: 'light'}) }}" data-turbo="false">{{ 'theme.light'|trans }}</a>
                         {% else %}
-                            <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_theme', {theme: 'dark'}) }}">{{ 'theme.dark'|trans }}</a>
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ path('app_theme', {theme: 'dark'}) }}" data-turbo="false">{{ 'theme.dark'|trans }}</a>
                         {% endif %}
                         {% if app.user %}
                             <span class="navbar-text small">{{ app.user.userIdentifier }}</span>

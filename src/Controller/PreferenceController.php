@@ -24,7 +24,7 @@ class PreferenceController extends AbstractController
         }
 
         $response = $this->redirectToReferer($request);
-        $response->headers->setCookie($this->preferenceCookie('_locale', $locale));
+        $response->headers->setCookie($this->preferenceCookie($request, '_locale', $locale));
 
         return $response;
     }
@@ -39,7 +39,7 @@ class PreferenceController extends AbstractController
         }
 
         $response = $this->redirectToReferer($request);
-        $response->headers->setCookie($this->preferenceCookie('_theme', $theme));
+        $response->headers->setCookie($this->preferenceCookie($request, '_theme', $theme));
 
         return $response;
     }
@@ -59,13 +59,13 @@ class PreferenceController extends AbstractController
         return $this->redirect($referer);
     }
 
-    private function preferenceCookie(string $name, string $value): Cookie
+    private function preferenceCookie(Request $request, string $name, string $value): Cookie
     {
         return Cookie::create($name)
             ->withValue($value)
             ->withExpires(new \DateTimeImmutable('+1 year'))
             ->withPath('/')
             ->withHttpOnly(false)
-            ->withSecure($this->getParameter('kernel.environment') === 'prod');
+            ->withSecure($request->isSecure());
     }
 }

@@ -40,10 +40,42 @@
             {% endfor %}
         </select>
     {% elseif attribute.type == 'image' %}
-        <input class="form-control form-control-sm" type="url" name="values[{{ attribute.id }}][value]" value="{{ current }}" placeholder="https://"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
-        {% if current %}
-            <img src="{{ current }}" alt="{{ attribute.name }}" class="img-fluid mt-2" style="max-height: 80px;">
-        {% endif %}
+        {% set cloudName = cloudinary_cloud_name|default('') %}
+        {% set uploadPreset = cloudinary_upload_preset|default('') %}
+        <div
+            data-controller="image-upload"
+            data-image-upload-cloud-value="{{ cloudName }}"
+            data-image-upload-preset-value="{{ uploadPreset }}"
+            data-image-upload-uploading-value="{{ 'attribute.image_uploading'|trans }}"
+            data-image-upload-failed-value="{{ 'attribute.image_failed'|trans }}"
+        >
+            <input
+                class="form-control form-control-sm"
+                type="url"
+                name="values[{{ attribute.id }}][value]"
+                value="{{ current }}"
+                placeholder="https://"
+                data-image-upload-target="input"
+                {% if form_id is defined %} form="{{ form_id }}"{% endif %}
+            >
+            {% if cloudName and uploadPreset %}
+                <div
+                    class="border rounded p-3 mt-2 text-center small text-muted"
+                    data-action="dragover->image-upload#dragover drop->image-upload#drop"
+                >
+                    {{ 'attribute.image_drop'|trans }}
+                    <input class="form-control form-control-sm mt-2" type="file" accept="image/*" data-action="change->image-upload#pick">
+                </div>
+                <div class="form-text" data-image-upload-target="status"></div>
+            {% endif %}
+            <img
+                src="{{ current ?: '' }}"
+                alt="{{ attribute.name }}"
+                class="img-fluid mt-2 {{ current ? '' : 'd-none' }}"
+                style="max-height: 80px;"
+                data-image-upload-target="preview"
+            >
+        </div>
     {% else %}
         <input class="form-control form-control-sm" type="text" name="values[{{ attribute.id }}][value]" value="{{ current }}"{% if form_id is defined %} form="{{ form_id }}"{% endif %}>
     {% endif %}

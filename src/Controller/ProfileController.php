@@ -12,10 +12,12 @@ use App\Repository\AttributeRepository;
 use App\Repository\AttributeValueRepository;
 use App\Repository\CurriculumVitaeRepository;
 use App\Repository\ProjectRepository;
+use App\Enum\CvStatus;
 use App\Repository\UserRepository;
 use App\Security\Voter\ProfileVoter;
 use App\Service\CvService;
 use App\Service\ProfileValueService;
+use App\Service\RecentAttributeStore;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,6 +35,7 @@ class ProfileController extends AbstractController
         private readonly CurriculumVitaeRepository $cvs,
         private readonly ProfileValueService $profileValues,
         private readonly CvService $cvService,
+        private readonly RecentAttributeStore $recentAttributes,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -192,7 +195,11 @@ class ProfileController extends AbstractController
 
     private function renderProfile(User $profileUser, string $tab): Response
     {
-        $this->denyAccessUnlessGranted(ProfileVoter::VIEW, $profileUser);
+        $canViewFull = $this->isGranted(ProfileVoter::VIEW, $profileUser);
+        $isPublicView = !$canViewFull && $this->isGranted(ProfileVoter::PUBLIC, $profileUser);
+        if (!$canViewFull && !$isPublicView) {
+            throw $this->createAccessDeniedException();
+        }
 
         $values = $this->attributeValues->findEntitiesIndexedByAttributeId($profileUser);
         $infoAttributes = [];
@@ -209,22 +216,33 @@ class ProfileController extends AbstractController
         );
 
         $available = [];
-        foreach ($this->attributes->findLibrary() as $attribute) {
-            if (!\in_array($attribute->getId(), $selectedInfoIds, true)) {
-                $available[] = $attribute;
+        if (!$isPublicView) {
+            foreach ($this->attributes->findLibrary() as $attribute) {
+                if (!\in_array($attribute->getId(), $selectedInfoIds, true)) {
+                    $available[] = $attribute;
+                }
             }
+        }
+
+        $cvs = $this->cvService->listForProfile($profileUser, $this->requireCurrentUser());
+        if ($isPublicView) {
+            $cvs = array_values(array_filter(
+                $cvs,
+                static fn ($cv): bool => $cv->getStatus() === CvStatus::Published->value,
+            ));
         }
 
         return $this->render('profile/show.html.twig', [
             'profileUser' => $profileUser,
             'tab' => $this->safeTab($tab),
             'canEdit' => $this->isGranted(ProfileVoter::EDIT, $profileUser),
+            'isPublicView' => $isPublicView,
             'builtIns' => $this->attributes->findBuiltIns(),
             'infoAttributes' => $infoAttributes,
             'availableAttributes' => $available,
             'values' => $values,
             'projects' => $this->projects->findByOwner($profileUser),
-            'cvs' => $this->cvService->listForProfile($profileUser, $this->requireCurrentUser()),
+            'cvs' => $cvs,
             'tagSuggestions' => $this->projects->findDistinctTags(),
         ]);
     }
@@ -264,6 +282,9 @@ class ProfileController extends AbstractController
         }
 
         $this->profileValues->attachLibraryAttribute($profileUser, $attribute);
+        if ($attribute->getId() !== null) {
+            $this->recentAttributes->remember([$attribute->getId()]);
+        }
         $this->addFlash('success', 'profile.flash.attribute_added');
 
         return $this->redirectToInfo($profileUser);

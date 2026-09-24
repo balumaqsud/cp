@@ -9,6 +9,7 @@ use App\Form\AttributeFormType;
 use App\Repository\AttributeRepository;
 use App\Repository\CategoryRepository;
 use App\Security\Voter\AttributeVoter;
+use App\Service\RecentAttributeStore;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +22,7 @@ class AttributeController extends AbstractController
     public function __construct(
         private readonly AttributeRepository $attributes,
         private readonly CategoryRepository $categories,
+        private readonly RecentAttributeStore $recentAttributes,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -41,6 +43,7 @@ class AttributeController extends AbstractController
             'categories' => $this->categories->findAllOrdered(),
             'prefix' => $prefix,
             'categoryId' => $categoryId > 0 ? $categoryId : null,
+            'recentAttributes' => $this->attributes->findByIds($this->recentAttributes->ids()),
             'canManage' => $this->isGranted(AttributeVoter::MANAGE),
         ]);
     }

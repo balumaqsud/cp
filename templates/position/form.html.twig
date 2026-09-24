@@ -3,7 +3,35 @@
 {% block title %}{{ position.id ? 'position.edit'|trans : 'position.create'|trans }}{% endblock %}
 
 {% block body %}
+    {% set filterPath = position.id ? path('app_position_edit', {id: position.id}) : path('app_position_new') %}
+    {% set visibleIds = [] %}
+    {% for attribute in recentAttributes|default([]) %}
+        {% set visibleIds = visibleIds|merge([attribute.id]) %}
+    {% endfor %}
+    {% for attribute in filteredLibrary %}
+        {% set visibleIds = visibleIds|merge([attribute.id]) %}
+    {% endfor %}
+
     <h1 class="h4 mb-3">{{ position.id ? 'position.edit'|trans : 'position.create'|trans }}</h1>
+
+    <form method="get" action="{{ filterPath }}" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <label class="visually-hidden" for="attribute-prefix">{{ 'attribute.filter_prefix'|trans }}</label>
+            <input id="attribute-prefix" class="form-control form-control-sm" type="search" name="prefix" value="{{ prefix }}" placeholder="{{ 'attribute.filter_prefix'|trans }}">
+        </div>
+        <div class="col-md-4">
+            <label class="visually-hidden" for="attribute-category">{{ 'attribute.category'|trans }}</label>
+            <select id="attribute-category" class="form-select form-select-sm" name="category">
+                <option value="">{{ 'attribute.category_all'|trans }}</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {{ categoryId == category.id ? 'selected' }}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">{{ 'attribute.filter'|trans }}</button>
+        </div>
+    </form>
 
     {{ form_start(form) }}
         <div class="row">
@@ -13,14 +41,70 @@
                 {{ form_row(form.company) }}
                 {{ form_row(form.level) }}
                 {{ form_row(form.isPublic) }}
-                {{ form_row(form.projectTagsText) }}
+                <div class="mb-3" data-controller="tags">
+                    {{ form_label(form.projectTagsText) }}
+                    {{ form_widget(form.projectTagsText, {
+                        attr: {
+                            'data-tags-target': 'input',
+                            class: 'd-none',
+                        }
+                    }) }}
+                    <div class="d-flex flex-wrap gap-1 mb-2" data-tags-target="chips"></div>
+                    <input
+                        class="form-control"
+                        type="text"
+                        data-tags-target="entry"
+                        data-action="keydown->tags#add blur->tags#blur"
+                        list="project-tag-suggestions"
+                        autocomplete="off"
+                        placeholder="{{ 'project.tags_placeholder'|trans }}"
+                    >
+                    <datalist id="project-tag-suggestions">
+                        {% for tag in tagSuggestions %}
+                            <option value="{{ tag }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    <div class="form-text">{{ 'project.tags_help'|trans }}</div>
+                    {{ form_errors(form.projectTagsText) }}
+                </div>
                 {{ form_row(form.maxProjects) }}
                 {{ form_row(form.version) }}
             </div>
         </div>
 
+        {% for id in selectedIds %}
+            {% if id not in visibleIds %}
+                <input type="hidden" name="attribute_ids[]" value="{{ id }}">
+                {% if requiredById[id]|default(false) %}
+                    <input type="hidden" name="attribute_required[{{ id }}]" value="1">
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+
         <h2 class="h5 mt-4">{{ 'position.template'|trans }}</h2>
         <p class="text-muted small">{{ 'position.template_help'|trans }}</p>
+
+        {% if recentAttributes is not empty %}
+            <h3 class="h6">{{ 'attribute.recent'|trans }}</h3>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
+                        <tr>
+                            <th>{{ 'position.include'|trans }}</th>
+                            <th>{{ 'attribute.name'|trans }}</th>
+                            <th>{{ 'attribute.type'|trans }}</th>
+                            <th>{{ 'position.required'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attribute in recentAttributes %}
+                            {% include 'position/_attribute_row.html.twig' %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+
         <div class="table-responsive">
             <table class="table table-sm align-middle">
                 <thead>
@@ -32,28 +116,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if library is empty %}
+                    {% if filteredLibrary is empty %}
                         <tr>
                             <td colspan="4" class="text-muted">{{ 'table.empty'|trans }}</td>
                         </tr>
                     {% endif %}
-                    {% for attribute in library %}
-                        <tr>
-                            <td>
-                                <input class="form-check-input" type="checkbox" name="attribute_ids[]" value="{{ attribute.id }}" {{ attribute.id in selectedIds ? 'checked' }}>
-                            </td>
-                            <td>{{ attribute.name }}</td>
-                            <td>{{ ('attribute.types.' ~ attribute.type)|trans }}</td>
-                            <td>
-                                <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    name="attribute_required[{{ attribute.id }}]"
-                                    value="1"
-                                    {% if requiredById[attribute.id] is defined %}{{ requiredById[attribute.id] ? 'checked' }}{% else %}checked{% endif %}
-                                >
-                            </td>
-                        </tr>
+                    {% for attribute in filteredLibrary %}
+                        {% include 'position/_attribute_row.html.twig' %}
                     {% endfor %}
                 </tbody>
             </table>

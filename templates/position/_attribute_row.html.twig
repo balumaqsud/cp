@@ -1,0 +1,16 @@
+<tr>
+    <td>
+        <input class="form-check-input" type="checkbox" name="attribute_ids[]" value="{{ attribute.id }}" {{ attribute.id in selectedIds ? 'checked' }}>
+    </td>
+    <td>{{ attribute.name }}</td>
+    <td>{{ ('attribute.types.' ~ attribute.type)|trans }}</td>
+    <td>
+        <input
+            class="form-check-input"
+            type="checkbox"
+            name="attribute_required[{{ attribute.id }}]"
+            value="1"
+            {% if requiredById[attribute.id] is defined %}{{ requiredById[attribute.id] ? 'checked' }}{% else %}checked{% endif %}
+        >
+    </td>
+</tr>

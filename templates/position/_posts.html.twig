@@ -5,7 +5,11 @@
         {% for post in posts %}
             <li class="mb-3 pb-3 border-bottom">
                 <div class="small text-muted mb-1">
-                    {{ post.author ? post.author.name : '—' }}
+                    {% if post.author and is_granted('PROFILE_PUBLIC', post.author) %}
+                        <a href="{{ path('app_profile_show', {id: post.author.id}) }}">{{ post.author.name }}</a>
+                    {% else %}
+                        {{ post.author ? post.author.name : '—' }}
+                    {% endif %}
                     · {{ post.createdAt ? post.createdAt|date('Y-m-d H:i') : '' }}
                 </div>
                 <div class="markdown-body">

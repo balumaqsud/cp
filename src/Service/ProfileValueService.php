@@ -133,8 +133,23 @@ final class ProfileValueService
             AttributeType::Numeric => $this->asNumber($value),
             AttributeType::Period => $this->asPeriod($value),
             AttributeType::Date => $this->asDateString($value),
+            AttributeType::Image => $this->asHttpsUrl($value),
             default => $value === '' ? null : $value,
         };
+    }
+
+    private function asHttpsUrl(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $url = trim((string) $value);
+        if (!str_starts_with($url, 'https://')) {
+            return null;
+        }
+
+        return $url;
     }
 
     private function asBool(mixed $value): bool

@@ -11,13 +11,16 @@ use App\Enum\AccessOperator;
 use App\Form\DiscussionPostType;
 use App\Form\PositionType;
 use App\Repository\AttributeRepository;
+use App\Repository\CategoryRepository;
 use App\Repository\CurriculumVitaeRepository;
 use App\Repository\DiscussionPostRepository;
 use App\Repository\PositionRepository;
+use App\Repository\ProjectRepository;
 use App\Security\Voter\PositionVoter;
 use App\Service\CvService;
 use App\Service\PositionAccessEvaluator;
 use App\Service\PositionService;
+use App\Service\RecentAttributeStore;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
@@ -31,11 +34,14 @@ class PositionController extends AbstractController
     public function __construct(
         private readonly PositionRepository $positions,
         private readonly AttributeRepository $attributes,
+        private readonly CategoryRepository $categories,
         private readonly CurriculumVitaeRepository $cvs,
         private readonly DiscussionPostRepository $discussionPosts,
+        private readonly ProjectRepository $projects,
         private readonly PositionAccessEvaluator $accessEvaluator,
         private readonly PositionService $positionService,
         private readonly CvService $cvService,
+        private readonly RecentAttributeStore $recentAttributes,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -195,6 +201,8 @@ class PositionController extends AbstractController
                 return $this->redirectToRoute('app_position_edit', ['id' => $position->getId()]);
             }
 
+            $this->recentAttributes->remember($this->selectedAttributeIds($request));
+
             $this->addFlash('success', $isNew ? 'position.flash.created' : 'position.flash.updated');
 
             return $this->redirectToRoute('app_position_show', ['id' => $position->getId()]);
@@ -214,6 +222,25 @@ class PositionController extends AbstractController
             $selectedIds = array_values(array_unique($selectedIds));
         }
 
+        $prefix = trim($request->query->getString('prefix'));
+        $categoryId = $request->query->getInt('category');
+        $recent = $this->attributes->findByIds($this->recentAttributes->ids());
+        $recentIds = [];
+        foreach ($recent as $attribute) {
+            if ($attribute->getId() !== null) {
+                $recentIds[] = $attribute->getId();
+            }
+        }
+
+        $filtered = $this->attributes->search(
+            $prefix !== '' ? $prefix : null,
+            $categoryId > 0 ? $categoryId : null,
+        );
+        $filtered = array_values(array_filter(
+            $filtered,
+            static fn ($attribute): bool => !\in_array($attribute->getId(), $recentIds, true),
+        ));
+
         $rules = $form->isSubmitted()
             ? $request->request->all('rules')
             : $this->ruleRows($position);
@@ -222,10 +249,16 @@ class PositionController extends AbstractController
             'form' => $form,
             'position' => $position,
             'library' => $this->attributes->search(null, null),
+            'filteredLibrary' => $filtered,
+            'recentAttributes' => $recent,
+            'categories' => $this->categories->findAllOrdered(),
+            'prefix' => $prefix,
+            'categoryId' => $categoryId > 0 ? $categoryId : null,
             'selectedIds' => $selectedIds,
             'requiredById' => $requiredById,
             'rules' => $rules,
             'operators' => AccessOperator::choices(),
+            'tagSuggestions' => $this->projects->findDistinctTags(),
         ]);
     }
 

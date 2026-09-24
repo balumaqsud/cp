@@ -12,10 +12,11 @@ final class ProfileVoter extends Voter
 {
     public const VIEW = 'PROFILE_VIEW';
     public const EDIT = 'PROFILE_EDIT';
+    public const PUBLIC = 'PROFILE_PUBLIC';
 
     protected function supports(string $attribute, mixed $subject): bool
     {
-        return \in_array($attribute, [self::VIEW, self::EDIT], true)
+        return \in_array($attribute, [self::VIEW, self::EDIT, self::PUBLIC], true)
             && $subject instanceof User;
     }
 
@@ -24,6 +25,10 @@ final class ProfileVoter extends Voter
         $user = $token->getUser();
         if (!$user instanceof User || $user->isBlocked() || !$subject instanceof User) {
             return false;
+        }
+
+        if ($attribute === self::PUBLIC) {
+            return $user->isRecruiter();
         }
 
         if ($user->isAdmin()) {

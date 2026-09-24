@@ -57,7 +57,7 @@ position:
     description: Qisqa tavsif
     level_any: Istalgan
     public_help: Hammaga koʻrinadi
-    project_tags: Loyiha teglari (vergul bilan)
+    project_tags: Loyiha teglari
     max_projects: CV dagi loyihalar limiti
     template: Shablon
     template_help: Shu lavozim CV larida qaysi profil atributlari chiqishini tanlang.
@@ -98,13 +98,17 @@ attribute:
         date: Sana
         period: Davr
         choice: Tanlov
-        image: Rasm URL
+        image: Rasm
     built_in: Tizim
     description: Tavsif
     options: Variantlar (har qatorga bitta)
     options_required: Bu tur uchun kamida bitta variant yozing.
     filter_prefix: Nom prefiksi
     filter: Filtrlash
+    recent: Yaqinda ishlatilgan
+    image_drop: Rasmni shu yerga tashlang yoki fayl tanlang. Fayl Cloudinary ga yuklanadi, bu serverga emas.
+    image_uploading: Yuklanmoqda…
+    image_failed: Yuklash muvaffaqiyatsiz.
     create: Yaratish
     edit: Tahrirlash
     delete: Oʻchirish
@@ -185,8 +189,9 @@ project:
     start: Boshlanish sanasi
     end: Tugash sanasi (davom etsa boʻsh)
     description: Tavsif (Markdown)
-    tags: Texnologiya teglari (vergul bilan)
+    tags: Texnologiya teglari
     tags_help: Takliflar allaqachon ishlatilgan teglardan olinadi.
+    tags_placeholder: Teg yozing va Enter bosing
     ongoing: davom etmoqda
     create: Yaratish
     edit: Tahrirlash

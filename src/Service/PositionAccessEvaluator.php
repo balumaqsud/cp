@@ -96,7 +96,34 @@ final class PositionAccessEvaluator
             AccessOperator::Gte => $this->compare($actual, $expected) >= 0,
             AccessOperator::Lt => $this->compare($actual, $expected) < 0,
             AccessOperator::Lte => $this->compare($actual, $expected) <= 0,
+            AccessOperator::Contains => $this->contains($actual, $expected),
+            AccessOperator::StartsWith => $this->startsWith($actual, $expected),
         };
+    }
+
+    private function contains(mixed $actual, mixed $expected): bool
+    {
+        $haystack = mb_strtolower($this->asText($actual));
+        $needle = mb_strtolower($this->asText($expected));
+
+        return $needle !== '' && mb_strpos($haystack, $needle) !== false;
+    }
+
+    private function startsWith(mixed $actual, mixed $expected): bool
+    {
+        $haystack = mb_strtolower($this->asText($actual));
+        $needle = mb_strtolower($this->asText($expected));
+
+        return $needle !== '' && str_starts_with($haystack, $needle);
+    }
+
+    private function asText(mixed $value): string
+    {
+        if (\is_array($value)) {
+            return trim(implode(' ', array_map(strval(...), $value)));
+        }
+
+        return (string) $value;
     }
 
     private function compare(mixed $actual, mixed $expected): int

@@ -12,6 +12,8 @@ enum AccessOperator: string
     case Gte = 'gte';
     case Lt = 'lt';
     case Lte = 'lte';
+    case Contains = 'contains';
+    case StartsWith = 'starts_with';
 
     /**
      * @return array<string, string>
@@ -25,6 +27,8 @@ enum AccessOperator: string
             '>=' => self::Gte->value,
             '<' => self::Lt->value,
             '<=' => self::Lte->value,
+            'contains' => self::Contains->value,
+            'starts with' => self::StartsWith->value,
         ];
     }
 }

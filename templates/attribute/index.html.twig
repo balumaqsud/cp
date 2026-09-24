@@ -24,6 +24,15 @@
         </div>
     </form>
 
+    {% if recentAttributes is not empty %}
+        <h2 class="h6">{{ 'attribute.recent'|trans }}</h2>
+        <ul class="list-unstyled small mb-3">
+            {% for attribute in recentAttributes %}
+                <li>{{ attribute.name }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
     <form method="post" action="{{ path('app_attribute_bulk') }}">
         <input type="hidden" name="_token" value="{{ csrf_token('attribute_bulk') }}">
 

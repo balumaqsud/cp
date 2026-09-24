@@ -57,7 +57,7 @@ position:
     description: Short description
     level_any: Any
     public_help: Visible to everyone
-    project_tags: Project tags (comma-separated)
+    project_tags: Project tags
     max_projects: Max projects on CV
     template: Template
     template_help: Choose which profile attributes appear on CVs for this position.
@@ -98,13 +98,17 @@ attribute:
         date: Date
         period: Period
         choice: Choice
-        image: Image URL
+        image: Image
     built_in: Built-in
     description: Description
     options: Choices (one per line)
     options_required: Add at least one choice for this type.
     filter_prefix: Name prefix
     filter: Filter
+    recent: Recently used
+    image_drop: Drop an image here or choose a file. It is uploaded to Cloudinary, not this server.
+    image_uploading: Uploading…
+    image_failed: Upload failed.
     create: Create
     edit: Edit
     delete: Delete
@@ -185,8 +189,9 @@ project:
     start: Start date
     end: End date (empty if ongoing)
     description: Description (Markdown)
-    tags: Technology tags (comma-separated)
+    tags: Technology tags
     tags_help: Suggestions come from tags already used on projects and positions.
+    tags_placeholder: Type a tag and press Enter
     ongoing: ongoing
     create: Create
     edit: Edit

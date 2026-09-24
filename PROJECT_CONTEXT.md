@@ -1227,23 +1227,15 @@ Preserve working functionality.
 
 Current state:
 
-- Symfony project created.
-- PHP stack selected.
-- PostgreSQL selected.
-- Doctrine ORM configured.
-- Doctrine migrations configured.
-- Project deployed.
-- Initial database work completed.
-- Entities and repositories have been started.
-- Database migrations have already been generated/used during development.
+- Symfony + PostgreSQL + Doctrine are in place and deployed.
+- Domain model is complete (users, attributes, positions, CVs, likes, discussions).
+- Authentication includes form login and Google/GitHub OAuth.
+- Killer features, home dashboard, admin user management, search, autosave, themes, and i18n are implemented.
+- Remaining work is defense preparation, not a new domain.
 
 Current development focus:
 
-> Complete and validate the domain model/entities/repositories before building the majority of the application UI and business logic.
-
-Do not assume the existing entity model is perfect.
-
-Review it against this document before implementing dependent features.
+> Keep a deployable version, protect secrets in `.env.local` / Render env, and be able to explain every important class.
 
 ---
 
@@ -1260,7 +1252,7 @@ Use the following implementation order unless there is a strong technical reason
 - Deployment.
 - Basic Hello World.
 
-STATUS: Mostly complete.
+STATUS: Complete.
 
 ---
 
@@ -1284,7 +1276,7 @@ Build and validate:
 
 Validate relationships before proceeding.
 
-STATUS: In progress.
+STATUS: Complete.
 
 ---
 
@@ -1299,6 +1291,8 @@ Implement:
 - Recruiter role.
 - Administrator role.
 - Access control.
+
+STATUS: Complete.
 
 ---
 
@@ -1317,6 +1311,8 @@ Implement:
 - Recently used.
 - Category filtering.
 
+STATUS: Complete.
+
 ---
 
 ## Phase 5 — Candidate Profile
@@ -1330,6 +1326,8 @@ Implement:
 - CV list.
 - Profile editing.
 - Administrator profile editing.
+
+STATUS: Complete.
 
 ---
 
@@ -1347,6 +1345,8 @@ Implement:
 - Maximum projects.
 - Access rules.
 
+STATUS: Complete.
+
 ---
 
 ## Phase 7 — CV Generation
@@ -1362,6 +1362,8 @@ Implement:
 - Profile value synchronization.
 - Draft/published state.
 
+STATUS: Complete.
+
 ---
 
 ## Phase 8 — Recruitment Features
@@ -1375,6 +1377,8 @@ Implement:
 - Permission-aware access.
 - Public/read-only position views.
 
+STATUS: Complete.
+
 ---
 
 ## Phase 9 — Discussions
@@ -1385,6 +1389,8 @@ Implement:
 - Markdown.
 - Chronological posts.
 - Polling updates.
+
+STATUS: Complete.
 
 ---
 
@@ -1398,6 +1404,8 @@ Implement:
 - Profile dirty-state tracking.
 - Periodic auto-save.
 
+STATUS: Complete.
+
 ---
 
 ## Phase 11 — Search
@@ -1410,6 +1418,8 @@ Implement:
 - Position search.
 - CV search.
 - Relevant candidate/project search.
+
+STATUS: Complete.
 
 ---
 
@@ -1426,6 +1436,8 @@ Implement:
 - Consistent navigation.
 - Table toolbars.
 - Clean empty/loading/error states.
+
+STATUS: Complete.
 
 ---
 
@@ -1463,6 +1475,8 @@ Also prepare to explain:
 - CV generation.
 - Search.
 - Why libraries were selected.
+
+STATUS: In progress (defense).
 
 ---
 
@@ -1756,16 +1770,11 @@ The goal is:
 
 # 54. Current Immediate Goal
 
-Before implementing large amounts of application logic:
+Keep the deployed application working.
 
-1. Inspect all current entities.
-2. Inspect all repositories.
-3. Inspect current migrations.
-4. Compare the database model against this document.
-5. Identify missing relationships.
-6. Fix the domain model if necessary.
-7. Generate/update migrations.
-8. Verify the database schema.
-9. Only then proceed to authentication and application logic.
+1. Do not commit `.env.local` or OAuth/database secrets.
+2. Set Cloudinary env vars on Render if image drag-and-drop should work in production.
+3. Confirm `docker-entrypoint.sh` runs migrations on boot.
+4. Be able to explain CV generation, optimistic locking, access rules, and voters.
 
-Do not rush into building all pages before the domain model is stable.
+---

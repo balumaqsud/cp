@@ -12,13 +12,32 @@
                 {{ form_row(form.startDate) }}
                 {{ form_row(form.endDate) }}
                 {{ form_row(form.description) }}
-                {{ form_row(form.tagsText) }}
-                <datalist id="project-tag-suggestions">
-                    {% for tag in tagSuggestions %}
-                        <option value="{{ tag }}"></option>
-                    {% endfor %}
-                </datalist>
-                <p class="form-text">{{ 'project.tags_help'|trans }}</p>
+                <div class="mb-3" data-controller="tags">
+                    {{ form_label(form.tagsText) }}
+                    {{ form_widget(form.tagsText, {
+                        attr: {
+                            'data-tags-target': 'input',
+                            class: 'd-none',
+                        }
+                    }) }}
+                    <div class="d-flex flex-wrap gap-1 mb-2" data-tags-target="chips"></div>
+                    <input
+                        class="form-control"
+                        type="text"
+                        data-tags-target="entry"
+                        data-action="keydown->tags#add blur->tags#blur"
+                        list="project-tag-suggestions"
+                        autocomplete="off"
+                        placeholder="{{ 'project.tags_placeholder'|trans }}"
+                    >
+                    <datalist id="project-tag-suggestions">
+                        {% for tag in tagSuggestions %}
+                            <option value="{{ tag }}"></option>
+                        {% endfor %}
+                    </datalist>
+                    <div class="form-text">{{ 'project.tags_help'|trans }}</div>
+                    {{ form_errors(form.tagsText) }}
+                </div>
                 <button type="submit" class="btn btn-primary">{{ 'attribute.save'|trans }}</button>
                 <a class="btn btn-outline-secondary" href="{{ path('app_profile_show', {id: profileUser.id, tab: 'projects'}) }}">{{ 'attribute.cancel'|trans }}</a>
             {{ form_end(form) }}

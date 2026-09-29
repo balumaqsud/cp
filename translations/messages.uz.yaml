@@ -106,7 +106,7 @@ attribute:
     filter_prefix: Nom prefiksi
     filter: Filtrlash
     recent: Yaqinda ishlatilgan
-    image_drop: Rasmni shu yerga tashlang yoki fayl tanlang. Fayl Cloudinary ga yuklanadi, bu serverga emas.
+    image_drop: Rasmni shu yerga tashlang yoki fayl tanlang. Fayl Supabase Storage ga yuklanadi, bu serverga emas.
     image_uploading: Yuklanmoqda…
     image_failed: Yuklash muvaffaqiyatsiz.
     create: Yaratish

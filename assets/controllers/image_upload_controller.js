@@ -4,8 +4,8 @@ import { Controller } from '@hotwired/stimulus'
 export default class extends Controller {
     static targets = ['input', 'preview', 'status']
     static values = {
-        cloud: String,
-        preset: String,
+        url: String,
+        csrf: String,
         uploading: { type: String, default: 'Uploading…' },
         failed: { type: String, default: 'Upload failed.' },
     }
@@ -30,31 +30,44 @@ export default class extends Controller {
     }
 
     async upload(file) {
-        if (!this.cloudValue || !this.presetValue) {
+        if (!this.urlValue || !this.csrfValue) {
             return
         }
 
         this.setStatus(this.uploadingValue)
 
-        const body = new FormData()
-        body.append('file', file)
-        body.append('upload_preset', this.presetValue)
-
         try {
-            const response = await fetch(`https://api.cloudinary.com/v1_1/${this.cloudValue}/image/upload`, {
+            const signed = await fetch(this.urlValue, {
                 method: 'POST',
-                body,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                },
+                body: JSON.stringify({
+                    contentType: file.type,
+                    filename: file.name,
+                    _token: this.csrfValue,
+                }),
             })
-            const payload = await response.json()
-            if (!response.ok || !payload.secure_url) {
+            const payload = await signed.json()
+            if (!signed.ok || !payload.uploadUrl || !payload.publicUrl) {
+                throw new Error('sign')
+            }
+
+            const uploaded = await fetch(payload.uploadUrl, {
+                method: 'PUT',
+                headers: { 'Content-Type': payload.contentType || file.type },
+                body: file,
+            })
+            if (!uploaded.ok) {
                 throw new Error('upload')
             }
 
-            this.inputTarget.value = payload.secure_url
+            this.inputTarget.value = payload.publicUrl
             this.inputTarget.dispatchEvent(new Event('input', { bubbles: true }))
             this.inputTarget.dispatchEvent(new Event('change', { bubbles: true }))
             if (this.hasPreviewTarget) {
-                this.previewTarget.src = payload.secure_url
+                this.previewTarget.src = payload.publicUrl
                 this.previewTarget.classList.remove('d-none')
             }
             this.setStatus('')

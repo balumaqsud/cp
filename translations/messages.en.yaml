@@ -106,7 +106,7 @@ attribute:
     filter_prefix: Name prefix
     filter: Filter
     recent: Recently used
-    image_drop: Drop an image here or choose a file. It is uploaded to Cloudinary, not this server.
+    image_drop: Drop an image here or choose a file. It is uploaded to Supabase Storage, not this server.
     image_uploading: Uploading…
     image_failed: Upload failed.
     create: Create

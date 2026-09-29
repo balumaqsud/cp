@@ -40,12 +40,11 @@
             {% endfor %}
         </select>
     {% elseif attribute.type == 'image' %}
-        {% set cloudName = cloudinary_cloud_name|default('') %}
-        {% set uploadPreset = cloudinary_upload_preset|default('') %}
+        {% set uploadEnabled = supabase_bucket|default('') and supabase_public_url|default('') %}
         <div
             data-controller="image-upload"
-            data-image-upload-cloud-value="{{ cloudName }}"
-            data-image-upload-preset-value="{{ uploadPreset }}"
+            data-image-upload-url-value="{{ path('app_image_upload_url') }}"
+            data-image-upload-csrf-value="{{ csrf_token('image_upload') }}"
             data-image-upload-uploading-value="{{ 'attribute.image_uploading'|trans }}"
             data-image-upload-failed-value="{{ 'attribute.image_failed'|trans }}"
         >
@@ -58,7 +57,7 @@
                 data-image-upload-target="input"
                 {% if form_id is defined %} form="{{ form_id }}"{% endif %}
             >
-            {% if cloudName and uploadPreset %}
+            {% if uploadEnabled %}
                 <div
                     class="border rounded p-3 mt-2 text-center small text-muted"
                     data-action="dragover->image-upload#dragover drop->image-upload#drop"

@@ -18,7 +18,6 @@ use App\Security\Voter\CurriculumVitaeVoter;
 use App\Security\Voter\PositionVoter;
 use App\Service\AttributeValueHelper;
 use App\Service\CvService;
-use App\Service\PositionAccessEvaluator;
 use App\Service\ProfileValueService;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,7 +35,6 @@ class CvController extends AbstractController
         private readonly CvLikeRepository $likes,
         private readonly CvService $cvService,
         private readonly ProfileValueService $profileValues,
-        private readonly PositionAccessEvaluator $accessEvaluator,
     ) {
     }
 
@@ -61,7 +59,7 @@ class CvController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $positions = $this->accessEvaluator->visibleTo($user, $this->positions->findAllWithAccessGraph());
+        $positions = $user->getId() === null ? [] : $this->positions->findVisibleToCandidate($user->getId());
 
         return $this->render('cv/new.html.twig', [
             'positions' => $positions,

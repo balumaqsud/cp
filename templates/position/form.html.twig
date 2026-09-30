@@ -105,28 +105,30 @@
             </div>
         {% endif %}
 
-        <div class="table-responsive">
-            <table class="table table-sm align-middle">
-                <thead>
-                    <tr>
-                        <th>{{ 'position.include'|trans }}</th>
-                        <th>{{ 'attribute.name'|trans }}</th>
-                        <th>{{ 'attribute.type'|trans }}</th>
-                        <th>{{ 'position.required'|trans }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% if filteredLibrary is empty %}
+        {% if filterActive or recentAttributes is empty %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle">
+                    <thead>
                         <tr>
-                            <td colspan="4" class="text-muted">{{ 'table.empty'|trans }}</td>
+                            <th>{{ 'position.include'|trans }}</th>
+                            <th>{{ 'attribute.name'|trans }}</th>
+                            <th>{{ 'attribute.type'|trans }}</th>
+                            <th>{{ 'position.required'|trans }}</th>
                         </tr>
-                    {% endif %}
-                    {% for attribute in filteredLibrary %}
-                        {% include 'position/_attribute_row.html.twig' %}
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        {% if filteredLibrary is empty %}
+                            <tr>
+                                <td colspan="4" class="text-muted">{{ 'table.empty'|trans }}</td>
+                            </tr>
+                        {% endif %}
+                        {% for attribute in filteredLibrary %}
+                            {% include 'position/_attribute_row.html.twig' %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
 
         <h2 class="h5 mt-4">{{ 'position.access_rules'|trans }}</h2>
         <p class="text-muted small">{{ 'position.access_rules_help'|trans }}</p>
@@ -143,13 +145,13 @@
                     </thead>
                     <tbody data-collection-target="list">
                         {% for index, rule in rules %}
-                            {% include 'position/_rule_row.html.twig' with { index: index, rule: rule, library: library, operators: operators } %}
+                            {% include 'position/_rule_row.html.twig' with { index: index, rule: rule, ruleAttributes: ruleAttributes, operators: operators } %}
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
             <template>
-                {% include 'position/_rule_row.html.twig' with { index: '__index__', rule: { attributeId: '', operator: 'eq', compareValue: '' }, library: library, operators: operators } %}
+                {% include 'position/_rule_row.html.twig' with { index: '__index__', rule: { attributeId: '', operator: 'eq', compareValue: '' }, ruleAttributes: ruleAttributes, operators: operators } %}
             </template>
             <button type="button" class="btn btn-outline-secondary btn-sm" data-action="collection#add">{{ 'position.add_rule'|trans }}</button>
         </div>

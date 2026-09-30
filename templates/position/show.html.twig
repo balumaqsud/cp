@@ -79,12 +79,13 @@
                             <tr>
                                 <th>{{ 'cv.candidate'|trans }}</th>
                                 <th>{{ 'cv.status'|trans }}</th>
+                                <th>{{ 'cv.likes'|trans }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% if publishedCvs is empty %}
                                 <tr>
-                                    <td colspan="2" class="text-muted">{{ 'table.empty'|trans }}</td>
+                                    <td colspan="3" class="text-muted">{{ 'table.empty'|trans }}</td>
                                 </tr>
                             {% else %}
                                 {% for cv in publishedCvs %}
@@ -93,6 +94,7 @@
                                             <a href="{{ path('app_cv_show', {id: cv.id}) }}">{{ cv.user ? cv.user.name : '—' }}</a>
                                         </td>
                                         <td>{{ ('cv.status_' ~ cv.status)|trans }}</td>
+                                        <td>{{ likeCounts[cv.id]|default(0) }}</td>
                                     </tr>
                                 {% endfor %}
                             {% endif %}

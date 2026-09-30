@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Attribute;
+use App\Entity\CurriculumVitae;
 use App\Entity\DiscussionPost;
 use App\Entity\Position;
 use App\Entity\User;
@@ -13,12 +15,12 @@ use App\Form\PositionType;
 use App\Repository\AttributeRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\CurriculumVitaeRepository;
+use App\Repository\CvLikeRepository;
 use App\Repository\DiscussionPostRepository;
 use App\Repository\PositionRepository;
 use App\Repository\ProjectRepository;
 use App\Security\Voter\PositionVoter;
 use App\Service\CvService;
-use App\Service\PositionAccessEvaluator;
 use App\Service\PositionService;
 use App\Service\RecentAttributeStore;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
@@ -36,9 +38,9 @@ class PositionController extends AbstractController
         private readonly AttributeRepository $attributes,
         private readonly CategoryRepository $categories,
         private readonly CurriculumVitaeRepository $cvs,
+        private readonly CvLikeRepository $likes,
         private readonly DiscussionPostRepository $discussionPosts,
         private readonly ProjectRepository $projects,
-        private readonly PositionAccessEvaluator $accessEvaluator,
         private readonly PositionService $positionService,
         private readonly CvService $cvService,
         private readonly RecentAttributeStore $recentAttributes,
@@ -52,8 +54,8 @@ class PositionController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof User && $user->isRecruiter()) {
             $rows = $this->positions->findAllManaged();
-        } elseif ($user instanceof User) {
-            $rows = $this->accessEvaluator->visibleTo($user, $this->positions->findAllWithAccessGraph());
+        } elseif ($user instanceof User && $user->getId() !== null) {
+            $rows = $this->positions->findVisibleToCandidate($user->getId());
         } else {
             $rows = $this->positions->findPublic();
         }
@@ -126,6 +128,7 @@ class PositionController extends AbstractController
         return $this->render('position/show.html.twig', [
             'position' => $position,
             'publishedCvs' => $publishedCvs,
+            'likeCounts' => $this->likes->countIndexedByCvIds($this->cvIds($publishedCvs)),
             'posts' => $this->discussionPosts->findByPositionChronological($position),
             'discussionForm' => $discussionForm,
             'canDiscuss' => $this->isGranted(PositionVoter::DISCUSS, $position),
@@ -224,33 +227,34 @@ class PositionController extends AbstractController
 
         $prefix = trim($request->query->getString('prefix'));
         $categoryId = $request->query->getInt('category');
-        $recent = $this->attributes->findByIds($this->recentAttributes->ids());
-        $recentIds = [];
-        foreach ($recent as $attribute) {
-            if ($attribute->getId() !== null) {
-                $recentIds[] = $attribute->getId();
-            }
-        }
+        $filterActive = $prefix !== '' || $categoryId > 0;
+        $recent = $this->orderedAttributes($this->recentAttributes->ids());
+        $recentIds = $this->attributeIds($recent);
 
-        $filtered = $this->attributes->search(
-            $prefix !== '' ? $prefix : null,
-            $categoryId > 0 ? $categoryId : null,
-        );
-        $filtered = array_values(array_filter(
-            $filtered,
-            static fn ($attribute): bool => !\in_array($attribute->getId(), $recentIds, true),
-        ));
+        $filtered = [];
+        if ($filterActive) {
+            $matched = $this->attributes->search(
+                $prefix !== '' ? $prefix : null,
+                $categoryId > 0 ? $categoryId : null,
+            );
+            $filtered = array_values(array_filter(
+                $matched,
+                static fn (Attribute $attribute): bool => !\in_array($attribute->getId(), $recentIds, true),
+            ));
+        }
 
         $rules = $form->isSubmitted()
             ? $request->request->all('rules')
             : $this->ruleRows($position);
+        $ruleAttributes = $this->ruleAttributes($recent, $filtered, $selectedIds, $this->ruleAttributeIds($rules));
 
         return $this->render('position/form.html.twig', [
             'form' => $form,
             'position' => $position,
-            'library' => $this->attributes->search(null, null),
+            'ruleAttributes' => $ruleAttributes,
             'filteredLibrary' => $filtered,
             'recentAttributes' => $recent,
+            'filterActive' => $filterActive,
             'categories' => $this->categories->findAllOrdered(),
             'prefix' => $prefix,
             'categoryId' => $categoryId > 0 ? $categoryId : null,
@@ -260,6 +264,114 @@ class PositionController extends AbstractController
             'operators' => AccessOperator::choices(),
             'tagSuggestions' => $this->projects->findDistinctTags(),
         ]);
+    }
+
+    /**
+     * @param list<int> $ids
+     * @return list<Attribute>
+     */
+    private function orderedAttributes(array $ids): array
+    {
+        $byId = [];
+        foreach ($this->attributes->findByIds($ids) as $attribute) {
+            if ($attribute->getId() !== null) {
+                $byId[$attribute->getId()] = $attribute;
+            }
+        }
+
+        $ordered = [];
+        foreach ($ids as $id) {
+            if (isset($byId[$id])) {
+                $ordered[] = $byId[$id];
+            }
+        }
+
+        return $ordered;
+    }
+
+    /**
+     * @param list<Attribute> $recent
+     * @param list<Attribute> $filtered
+     * @param list<int> $selectedIds
+     * @param list<int> $ruleIds
+     * @return list<Attribute>
+     */
+    private function ruleAttributes(array $recent, array $filtered, array $selectedIds, array $ruleIds): array
+    {
+        $picker = [];
+        foreach ([...$recent, ...$filtered] as $attribute) {
+            if ($attribute->getId() !== null) {
+                $picker[$attribute->getId()] = $attribute;
+            }
+        }
+
+        $missing = [];
+        foreach ([...$selectedIds, ...$ruleIds] as $id) {
+            if (!isset($picker[$id])) {
+                $missing[] = $id;
+            }
+        }
+
+        foreach ($this->orderedAttributes($missing) as $attribute) {
+            if ($attribute->getId() !== null) {
+                $picker[$attribute->getId()] = $attribute;
+            }
+        }
+
+        return array_values($picker);
+    }
+
+    /**
+     * @param list<Attribute> $attributes
+     * @return list<int>
+     */
+    private function attributeIds(array $attributes): array
+    {
+        $ids = [];
+        foreach ($attributes as $attribute) {
+            if ($attribute->getId() !== null) {
+                $ids[] = $attribute->getId();
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param array<mixed> $rules
+     * @return list<int>
+     */
+    private function ruleAttributeIds(array $rules): array
+    {
+        $ids = [];
+        foreach ($rules as $rule) {
+            if (!\is_array($rule)) {
+                continue;
+            }
+
+            $id = (int) ($rule['attributeId'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    /**
+     * @param list<CurriculumVitae> $cvs
+     * @return list<int>
+     */
+    private function cvIds(array $cvs): array
+    {
+        $ids = [];
+        foreach ($cvs as $cv) {
+            if ($cv->getId() !== null) {
+                $ids[] = $cv->getId();
+            }
+        }
+
+        return $ids;
     }
 
     private function requirePosition(int $id): Position

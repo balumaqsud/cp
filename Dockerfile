@@ -26,6 +26,13 @@ ENV APP_DEBUG=0
 #   DATABASE_URL=postgresql://USER:PASS@HOST:5432/DB?serverVersion=16&charset=utf8
 #     (add &sslmode=require when using Render's external Postgres hostname)
 #   DEFAULT_URI=https://<your-service>.onrender.com
+#   SUPABASE_S3_ENDPOINT=
+#   SUPABASE_S3_REGION=
+#   SUPABASE_ACCESS_KEY=
+#   SUPABASE_SECRET_KEY=
+#   SUPABASE_BUCKET=
+#   SUPABASE_PUBLIC_URL=
+#     (all six required for photo drag-and-drop; leave unset to hide the uploader)
 ENV APP_SECRET=build-time-placeholder
 ENV DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
 

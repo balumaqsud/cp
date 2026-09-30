@@ -2,7 +2,7 @@
     <td>
         <select class="form-select form-select-sm" name="rules[{{ index }}][attributeId]">
             <option value="">{{ 'position.rule_attribute'|trans }}</option>
-            {% for attribute in library %}
+            {% for attribute in ruleAttributes %}
                 <option value="{{ attribute.id }}" {{ rule.attributeId|default('') == attribute.id ? 'selected' }}>{{ attribute.name }}</option>
             {% endfor %}
         </select>

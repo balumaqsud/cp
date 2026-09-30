@@ -9,7 +9,6 @@ use App\Repository\CurriculumVitaeRepository;
 use App\Repository\PositionRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
-use App\Service\PositionAccessEvaluator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,7 +20,6 @@ class HomeController extends AbstractController
         private readonly ProjectRepository $projects,
         private readonly CurriculumVitaeRepository $cvs,
         private readonly UserRepository $users,
-        private readonly PositionAccessEvaluator $accessEvaluator,
     ) {
     }
 
@@ -31,12 +29,8 @@ class HomeController extends AbstractController
         $user = $this->getUser();
         if ($user instanceof User && $user->isRecruiter()) {
             $latest = $this->positions->findLatestManaged(10);
-        } elseif ($user instanceof User) {
-            $latest = \array_slice(
-                $this->accessEvaluator->visibleTo($user, $this->positions->findAllWithAccessGraph()),
-                0,
-                10,
-            );
+        } elseif ($user instanceof User && $user->getId() !== null) {
+            $latest = $this->positions->findVisibleToCandidate($user->getId(), 10);
         } else {
             $latest = $this->positions->findLatest(10);
         }

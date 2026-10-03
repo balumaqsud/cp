@@ -23,7 +23,7 @@ ENV APP_DEBUG=0
 #   APP_ENV=prod
 #   APP_DEBUG=0
 #   APP_SECRET=<non-empty random secret>
-#   DATABASE_URL=postgresql://USER:PASS@HOST:5432/DB?serverVersion=16&charset=utf8
+#   DATABASE_URL=postgresql://USER:PASS@HOST:5432/DB?serverVersion=18.0.0&charset=utf8
 #     (add &sslmode=require when using Render's external Postgres hostname)
 #   DEFAULT_URI=https://<your-service>.onrender.com
 #   SUPABASE_S3_ENDPOINT=
@@ -34,7 +34,7 @@ ENV APP_DEBUG=0
 #   SUPABASE_PUBLIC_URL=
 #     (all six required for photo drag-and-drop; leave unset to hide the uploader)
 ENV APP_SECRET=build-time-placeholder
-ENV DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
+ENV DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=18.0.0&charset=utf8"
 
 # Render terminates TLS in front of the container.
 ENV CADDY_GLOBAL_OPTIONS="auto_https off"

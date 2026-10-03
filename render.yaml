@@ -1,0 +1,10 @@
+# Exported from Render on 2026-08-27T07:52:34Z
+version: "1"
+databases:
+- name: user-management-db
+  databaseName: app_oet4
+  user: app
+  plan: free
+  region: oregon
+  ipAllowList: []
+  postgresMajorVersion: "18"

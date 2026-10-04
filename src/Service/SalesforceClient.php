@@ -13,15 +13,15 @@ final class SalesforceClient
 
     public function __construct(
         private readonly HttpClientInterface $httpClient,
-        #[Autowire('%env(default::SALESFORCE_LOGIN_URL)%')]
+        #[Autowire('%env(SALESFORCE_LOGIN_URL)%')]
         private readonly string $loginUrl,
-        #[Autowire('%env(default::SALESFORCE_CLIENT_ID)%')]
+        #[Autowire('%env(SALESFORCE_CLIENT_ID)%')]
         private readonly string $clientId,
-        #[Autowire('%env(default::SALESFORCE_CLIENT_SECRET)%')]
+        #[Autowire('%env(SALESFORCE_CLIENT_SECRET)%')]
         private readonly string $clientSecret,
-        #[Autowire('%env(default::SALESFORCE_USERNAME)%')]
+        #[Autowire('%env(SALESFORCE_USERNAME)%')]
         private readonly string $username,
-        #[Autowire('%env(default::SALESFORCE_PASSWORD)%')]
+        #[Autowire('%env(SALESFORCE_PASSWORD)%')]
         private readonly string $password,
     ) {
     }

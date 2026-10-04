@@ -30,17 +30,17 @@ final class SupabaseStorageService
     ];
 
     public function __construct(
-        #[Autowire('%env(default::SUPABASE_S3_ENDPOINT)%')]
+        #[Autowire('%env(SUPABASE_S3_ENDPOINT)%')]
         private readonly string $endpoint,
-        #[Autowire('%env(default::SUPABASE_S3_REGION)%')]
+        #[Autowire('%env(SUPABASE_S3_REGION)%')]
         private readonly string $region,
-        #[Autowire('%env(default::SUPABASE_ACCESS_KEY)%')]
+        #[Autowire('%env(SUPABASE_ACCESS_KEY)%')]
         private readonly string $accessKey,
-        #[Autowire('%env(default::SUPABASE_SECRET_KEY)%')]
+        #[Autowire('%env(SUPABASE_SECRET_KEY)%')]
         private readonly string $secretKey,
-        #[Autowire('%env(default::SUPABASE_BUCKET)%')]
+        #[Autowire('%env(SUPABASE_BUCKET)%')]
         private readonly string $bucket,
-        #[Autowire('%env(default::SUPABASE_PUBLIC_URL)%')]
+        #[Autowire('%env(SUPABASE_PUBLIC_URL)%')]
         private readonly string $publicUrl,
     ) {
     }

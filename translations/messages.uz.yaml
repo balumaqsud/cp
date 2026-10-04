@@ -243,3 +243,16 @@ user:
         cannot_self: Oʻz hisobingizni bloklab yoki oʻchirib boʻlmaydi.
         invalid_role: Toʻgʻri rolni tanlang.
         in_use: Baʼzi foydalanuvchilarni oʻchirib boʻlmaydi.
+crm:
+    action: CRM ga qoʻshish
+    heading: CRM ga qoʻshish
+    help: Pastdagi profil maydonlari forma bilan yuboriladi. Kompaniya majburiy.
+    company: Kompaniya
+    phone: Telefon
+    title: Unvon
+    notes: Izoh
+    newsletter: Yangiliklar xati
+    flash:
+        created: Salesforce da account va kontakt yaratildi.
+        failed: Salesforce profilni saqlay olmadi.
+        not_configured: Salesforce sozlanmagan.

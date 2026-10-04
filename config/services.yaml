@@ -13,6 +13,11 @@ parameters:
     env(SUPABASE_SECRET_KEY): ''
     env(SUPABASE_BUCKET): ''
     env(SUPABASE_PUBLIC_URL): ''
+    env(SALESFORCE_LOGIN_URL): ''
+    env(SALESFORCE_CLIENT_ID): ''
+    env(SALESFORCE_CLIENT_SECRET): ''
+    env(SALESFORCE_USERNAME): ''
+    env(SALESFORCE_PASSWORD): ''
 
 services:
     # default configuration for services in *this* file

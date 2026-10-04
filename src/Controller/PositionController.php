@@ -4,27 +4,22 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Attribute;
 use App\Entity\CurriculumVitae;
-use App\Entity\DiscussionPost;
 use App\Entity\Position;
 use App\Entity\User;
-use App\Enum\AccessOperator;
 use App\Form\DiscussionPostType;
 use App\Form\PositionType;
 use App\Repository\AttributeRepository;
-use App\Repository\CategoryRepository;
 use App\Repository\CurriculumVitaeRepository;
 use App\Repository\CvLikeRepository;
 use App\Repository\DiscussionPostRepository;
 use App\Repository\PositionRepository;
-use App\Repository\ProjectRepository;
 use App\Security\Voter\PositionVoter;
 use App\Service\CvService;
 use App\Service\PositionService;
+use App\Service\PositionViewService;
 use App\Service\RecentAttributeStore;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
-use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -36,15 +31,13 @@ class PositionController extends AbstractController
     public function __construct(
         private readonly PositionRepository $positions,
         private readonly AttributeRepository $attributes,
-        private readonly CategoryRepository $categories,
         private readonly CurriculumVitaeRepository $cvs,
         private readonly CvLikeRepository $likes,
         private readonly DiscussionPostRepository $discussionPosts,
-        private readonly ProjectRepository $projects,
         private readonly PositionService $positionService,
+        private readonly PositionViewService $positionView,
         private readonly CvService $cvService,
         private readonly RecentAttributeStore $recentAttributes,
-        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -52,16 +45,9 @@ class PositionController extends AbstractController
     public function index(): Response
     {
         $user = $this->getUser();
-        if ($user instanceof User && $user->isRecruiter()) {
-            $rows = $this->positions->findAllManaged();
-        } elseif ($user instanceof User && $user->getId() !== null) {
-            $rows = $this->positions->findVisibleToCandidate($user->getId());
-        } else {
-            $rows = $this->positions->findPublic();
-        }
 
         return $this->render('position/index.html.twig', [
-            'positions' => $rows,
+            'positions' => $this->positionService->listFor($user instanceof User ? $user : null),
             'canManage' => $this->isGranted(PositionVoter::MANAGE),
         ]);
     }
@@ -71,18 +57,15 @@ class PositionController extends AbstractController
     {
         $this->denyAccessUnlessGranted(PositionVoter::MANAGE);
 
-        $position = new Position();
-
-        return $this->handleForm($request, $position);
+        return $this->handleForm($request, new Position());
     }
 
     #[Route('/positions/{id}/edit', name: 'app_position_edit', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function edit(Request $request, int $id): Response
     {
         $this->denyAccessUnlessGranted(PositionVoter::MANAGE);
-        $position = $this->requirePosition($id);
 
-        return $this->handleForm($request, $position);
+        return $this->handleForm($request, $this->requirePosition($id));
     }
 
     #[Route('/positions/{id}', name: 'app_position_show', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
@@ -98,12 +81,11 @@ class PositionController extends AbstractController
             $this->denyAccessUnlessGranted(PositionVoter::DISCUSS, $position);
             $user = $this->getUser();
             if ($discussionForm->isValid() && $user instanceof User) {
-                $post = new DiscussionPost();
-                $post->setPosition($position);
-                $post->setAuthor($user);
-                $post->setContent((string) $discussionForm->get('content')->getData());
-                $this->entityManager->persist($post);
-                $this->entityManager->flush();
+                $this->positionService->addDiscussionPost(
+                    $position,
+                    $user,
+                    (string) $discussionForm->get('content')->getData(),
+                );
                 $this->addFlash('success', 'position.flash.posted');
 
                 return $this->redirectToRoute('app_position_show', ['id' => $position->getId()]);
@@ -184,194 +166,42 @@ class PositionController extends AbstractController
                 }
             }
 
+            $attributeIds = $this->selectedAttributeIds($request);
             $this->positionService->applyTemplate(
                 $position,
-                $this->selectedAttributeIds($request),
+                $attributeIds,
                 $this->requiredFlags($request),
                 $request->request->all('rules'),
                 $this->attributes->findIndexedById(),
             );
 
-            if ($isNew) {
-                $this->entityManager->persist($position);
-            }
-
             try {
-                $this->entityManager->flush();
+                $this->positionService->save($position);
             } catch (OptimisticLockException) {
                 $this->addFlash('danger', 'position.flash.conflict');
 
                 return $this->redirectToRoute('app_position_edit', ['id' => $position->getId()]);
             }
 
-            $this->recentAttributes->remember($this->selectedAttributeIds($request));
-
+            $this->recentAttributes->remember($attributeIds);
             $this->addFlash('success', $isNew ? 'position.flash.created' : 'position.flash.updated');
 
             return $this->redirectToRoute('app_position_show', ['id' => $position->getId()]);
         }
 
-        $selectedIds = $this->selectedAttributeIds($request);
-        $requiredById = $this->requiredFlags($request);
-        if (!$form->isSubmitted()) {
-            foreach ($position->getPositionAttributes() as $positionAttribute) {
-                $id = $positionAttribute->getAttribute()?->getId();
-                if ($id === null) {
-                    continue;
-                }
-                $selectedIds[] = $id;
-                $requiredById[$id] = $positionAttribute->isRequired();
-            }
-            $selectedIds = array_values(array_unique($selectedIds));
-        }
-
-        $prefix = trim($request->query->getString('prefix'));
-        $categoryId = $request->query->getInt('category');
-        $filterActive = $prefix !== '' || $categoryId > 0;
-        $recent = $this->orderedAttributes($this->recentAttributes->ids());
-        $recentIds = $this->attributeIds($recent);
-
-        $filtered = [];
-        if ($filterActive) {
-            $matched = $this->attributes->search(
-                $prefix !== '' ? $prefix : null,
-                $categoryId > 0 ? $categoryId : null,
-            );
-            $filtered = array_values(array_filter(
-                $matched,
-                static fn (Attribute $attribute): bool => !\in_array($attribute->getId(), $recentIds, true),
-            ));
-        }
-
-        $rules = $form->isSubmitted()
-            ? $request->request->all('rules')
-            : $this->ruleRows($position);
-        $ruleAttributes = $this->ruleAttributes($recent, $filtered, $selectedIds, $this->ruleAttributeIds($rules));
-
         return $this->render('position/form.html.twig', [
             'form' => $form,
             'position' => $position,
-            'ruleAttributes' => $ruleAttributes,
-            'filteredLibrary' => $filtered,
-            'recentAttributes' => $recent,
-            'filterActive' => $filterActive,
-            'categories' => $this->categories->findAllOrdered(),
-            'prefix' => $prefix,
-            'categoryId' => $categoryId > 0 ? $categoryId : null,
-            'selectedIds' => $selectedIds,
-            'requiredById' => $requiredById,
-            'rules' => $rules,
-            'operators' => AccessOperator::choices(),
-            'tagSuggestions' => $this->projects->findDistinctTags(),
+            ...$this->positionView->formContext(
+                $position,
+                $form->isSubmitted(),
+                $this->selectedAttributeIds($request),
+                $this->requiredFlags($request),
+                $request->request->all('rules'),
+                $request->query->getString('prefix'),
+                $request->query->getInt('category'),
+            ),
         ]);
-    }
-
-    /**
-     * @param list<int> $ids
-     * @return list<Attribute>
-     */
-    private function orderedAttributes(array $ids): array
-    {
-        $byId = [];
-        foreach ($this->attributes->findByIds($ids) as $attribute) {
-            if ($attribute->getId() !== null) {
-                $byId[$attribute->getId()] = $attribute;
-            }
-        }
-
-        $ordered = [];
-        foreach ($ids as $id) {
-            if (isset($byId[$id])) {
-                $ordered[] = $byId[$id];
-            }
-        }
-
-        return $ordered;
-    }
-
-    /**
-     * @param list<Attribute> $recent
-     * @param list<Attribute> $filtered
-     * @param list<int> $selectedIds
-     * @param list<int> $ruleIds
-     * @return list<Attribute>
-     */
-    private function ruleAttributes(array $recent, array $filtered, array $selectedIds, array $ruleIds): array
-    {
-        $picker = [];
-        foreach ([...$recent, ...$filtered] as $attribute) {
-            if ($attribute->getId() !== null) {
-                $picker[$attribute->getId()] = $attribute;
-            }
-        }
-
-        $missing = [];
-        foreach ([...$selectedIds, ...$ruleIds] as $id) {
-            if (!isset($picker[$id])) {
-                $missing[] = $id;
-            }
-        }
-
-        foreach ($this->orderedAttributes($missing) as $attribute) {
-            if ($attribute->getId() !== null) {
-                $picker[$attribute->getId()] = $attribute;
-            }
-        }
-
-        return array_values($picker);
-    }
-
-    /**
-     * @param list<Attribute> $attributes
-     * @return list<int>
-     */
-    private function attributeIds(array $attributes): array
-    {
-        $ids = [];
-        foreach ($attributes as $attribute) {
-            if ($attribute->getId() !== null) {
-                $ids[] = $attribute->getId();
-            }
-        }
-
-        return $ids;
-    }
-
-    /**
-     * @param array<mixed> $rules
-     * @return list<int>
-     */
-    private function ruleAttributeIds(array $rules): array
-    {
-        $ids = [];
-        foreach ($rules as $rule) {
-            if (!\is_array($rule)) {
-                continue;
-            }
-
-            $id = (int) ($rule['attributeId'] ?? 0);
-            if ($id > 0) {
-                $ids[] = $id;
-            }
-        }
-
-        return array_values(array_unique($ids));
-    }
-
-    /**
-     * @param list<CurriculumVitae> $cvs
-     * @return list<int>
-     */
-    private function cvIds(array $cvs): array
-    {
-        $ids = [];
-        foreach ($cvs as $cv) {
-            if ($cv->getId() !== null) {
-                $ids[] = $cv->getId();
-            }
-        }
-
-        return $ids;
     }
 
     private function requirePosition(int $id): Position
@@ -415,14 +245,10 @@ class PositionController extends AbstractController
             return $this->redirectToRoute('app_position_index');
         }
 
-        $last = null;
-        foreach ($selected as $position) {
-            $last = $this->positionService->duplicate($position);
-        }
-
+        $last = $this->positionService->duplicateAll($selected);
         $this->addFlash('success', 'position.flash.duplicated');
 
-        return $this->redirectToRoute('app_position_edit', ['id' => $last?->getId()]);
+        return $this->redirectToRoute('app_position_edit', ['id' => $last->getId()]);
     }
 
     /**
@@ -437,14 +263,9 @@ class PositionController extends AbstractController
             return $this->redirectToRoute('app_position_index');
         }
 
-        foreach ($selected as $position) {
-            $this->entityManager->remove($position);
-        }
-
         try {
-            $this->entityManager->flush();
+            $this->positionService->deleteMany($selected);
         } catch (ForeignKeyConstraintViolationException) {
-            $this->entityManager->clear();
             $this->addFlash('danger', 'position.flash.in_use');
 
             return $this->redirectToRoute('app_position_index');
@@ -480,19 +301,18 @@ class PositionController extends AbstractController
     }
 
     /**
-     * @return list<array{attributeId: int|string, operator: string, compareValue: mixed}>
+     * @param list<CurriculumVitae> $cvs
+     * @return list<int>
      */
-    private function ruleRows(Position $position): array
+    private function cvIds(array $cvs): array
     {
-        $rows = [];
-        foreach ($position->getAccessRules() as $rule) {
-            $rows[] = [
-                'attributeId' => $rule->getAttribute()?->getId() ?? '',
-                'operator' => $rule->getOperator(),
-                'compareValue' => $rule->getCompareValue(),
-            ];
+        $ids = [];
+        foreach ($cvs as $cv) {
+            if ($cv->getId() !== null) {
+                $ids[] = $cv->getId();
+            }
         }
 
-        return $rows;
+        return $ids;
     }
 }

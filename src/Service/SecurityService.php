@@ -65,6 +65,24 @@ final class SecurityService
         return $user;
     }
 
+    public function chooseRole(User $user, string $role): void
+    {
+        $user->setRoles([$role]);
+        $this->entityManager->flush();
+    }
+
+    public function saveLocale(User $user, string $locale): void
+    {
+        $user->setLocale($locale);
+        $this->entityManager->flush();
+    }
+
+    public function saveTheme(User $user, string $theme): void
+    {
+        $user->setTheme($theme);
+        $this->entityManager->flush();
+    }
+
     private function applyRequestPreferences(User $user): void
     {
         $request = $this->requestStack->getCurrentRequest();

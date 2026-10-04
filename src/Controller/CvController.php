@@ -4,20 +4,15 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Attribute;
 use App\Entity\CurriculumVitae;
-use App\Entity\Position;
 use App\Entity\User;
-use App\Enum\CvStatus;
-use App\Repository\AttributeRepository;
-use App\Repository\AttributeValueRepository;
 use App\Repository\CurriculumVitaeRepository;
 use App\Repository\CvLikeRepository;
 use App\Repository\PositionRepository;
 use App\Security\Voter\CurriculumVitaeVoter;
 use App\Security\Voter\PositionVoter;
-use App\Service\AttributeValueHelper;
 use App\Service\CvService;
+use App\Service\CvViewService;
 use App\Service\ProfileValueService;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,10 +25,9 @@ class CvController extends AbstractController
     public function __construct(
         private readonly CurriculumVitaeRepository $cvs,
         private readonly PositionRepository $positions,
-        private readonly AttributeRepository $attributes,
-        private readonly AttributeValueRepository $attributeValues,
         private readonly CvLikeRepository $likes,
         private readonly CvService $cvService,
+        private readonly CvViewService $cvView,
         private readonly ProfileValueService $profileValues,
     ) {
     }
@@ -42,8 +36,7 @@ class CvController extends AbstractController
     public function index(): Response
     {
         $this->denyAccessUnlessGranted(CurriculumVitaeVoter::LIST);
-        $user = $this->requireUser();
-        $rows = $this->cvService->publishedVisibleTo($user);
+        $rows = $this->cvService->publishedVisibleTo($this->requireUser());
 
         return $this->render('cv/index.html.twig', [
             'cvs' => $rows,
@@ -74,16 +67,11 @@ class CvController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $positionId = $request->request->getInt('position_id');
-        if ($positionId === 0) {
-            $ids = array_map(static fn (mixed $id): int => (int) $id, (array) $request->request->all('ids'));
-            $ids = array_values(array_filter($ids, static fn (int $id): bool => $id > 0));
-            if (\count($ids) !== 1) {
-                $this->addFlash('danger', 'cv.flash.select_one');
+        $positionId = $this->selectedPositionId($request);
+        if ($positionId === null) {
+            $this->addFlash('danger', 'cv.flash.select_one');
 
-                return $this->redirectToRoute('app_cv_new');
-            }
-            $positionId = $ids[0];
+            return $this->redirectToRoute('app_cv_new');
         }
 
         $position = $this->positions->findOneWithTemplate($positionId) ?? throw $this->createNotFoundException();
@@ -100,7 +88,13 @@ class CvController extends AbstractController
         $cv = $this->requireCv($id);
         $this->denyAccessUnlessGranted(CurriculumVitaeVoter::VIEW, $cv);
 
-        return $this->renderCv($cv);
+        return $this->render('cv/show.html.twig', $this->cvView->build(
+            $cv,
+            $this->requireUser(),
+            $this->isGranted(CurriculumVitaeVoter::EDIT, $cv),
+            $this->isGranted(CurriculumVitaeVoter::PUBLISH, $cv),
+            $this->isGranted(CurriculumVitaeVoter::LIKE, $cv),
+        ));
     }
 
     #[Route('/cvs/{id}/values', name: 'app_cv_values', methods: ['POST'], requirements: ['id' => '\d+'])]
@@ -114,24 +108,12 @@ class CvController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $allowed = $this->editableAttributes($cv);
-        $items = [];
-        foreach ($request->request->all('values') as $attributeId => $raw) {
-            $attributeId = (int) $attributeId;
-            if (!isset($allowed[$attributeId]) || !\is_array($raw)) {
-                continue;
-            }
-
-            $versionRaw = $raw['version'] ?? '';
-            $items[] = [
-                'attributeId' => $attributeId,
-                'value' => $this->parsedValue($raw),
-                'version' => $versionRaw === '' ? null : (int) $versionRaw,
-            ];
-        }
-
         try {
-            $versions = $this->profileValues->upsertMany($owner, $items, $allowed);
+            $versions = $this->profileValues->saveSubmitted(
+                $owner,
+                $request->request->all('values'),
+                $this->cvView->editableAttributes($cv),
+            );
         } catch (OptimisticLockException) {
             $this->addFlash('danger', 'cv.flash.conflict');
 
@@ -191,66 +173,6 @@ class CvController extends AbstractController
         return $this->redirectToRoute('app_cv_show', ['id' => $cv->getId()]);
     }
 
-    private function renderCv(CurriculumVitae $cv): Response
-    {
-        $owner = $cv->getUser() ?? throw $this->createNotFoundException();
-        $position = $cv->getPosition() ?? throw $this->createNotFoundException();
-        $this->positions->findOneWithTemplate((int) $position->getId());
-
-        $user = $this->requireUser();
-        $builtIns = $this->attributes->findBuiltIns();
-        $templateAttributes = [];
-        $requiredIds = [];
-        foreach ($position->getPositionAttributes() as $positionAttribute) {
-            $attribute = $positionAttribute->getAttribute();
-            if ($attribute === null) {
-                continue;
-            }
-            if ($positionAttribute->isRequired() && $attribute->getId() !== null) {
-                $requiredIds[] = $attribute->getId();
-            }
-            if (!$attribute->isBuiltIn()) {
-                $templateAttributes[] = $attribute;
-            }
-        }
-
-        $valueEntities = $this->attributeValues->findEntitiesIndexedByAttributeId($owner);
-        $valueMap = [];
-        foreach ($valueEntities as $attributeId => $row) {
-            $valueMap[$attributeId] = $row->getValue();
-        }
-
-        $emptyIds = [];
-        foreach ([...$builtIns, ...$templateAttributes] as $attribute) {
-            $attributeId = $attribute->getId();
-            if ($attributeId !== null && AttributeValueHelper::isEmpty($valueMap[$attributeId] ?? null)) {
-                $emptyIds[] = $attributeId;
-            }
-        }
-
-        $canEdit = $this->isGranted(CurriculumVitaeVoter::EDIT, $cv);
-        $liked = $this->likes->findOneByRecruiterAndCv($user, $cv) !== null;
-
-        return $this->render('cv/show.html.twig', [
-            'cv' => $cv,
-            'owner' => $owner,
-            'position' => $position,
-            'builtIns' => $builtIns,
-            'templateAttributes' => $templateAttributes,
-            'requiredIds' => $requiredIds,
-            'values' => $valueEntities,
-            'emptyIds' => $emptyIds,
-            'projects' => $this->cvService->relevantProjects($owner, $position),
-            'complete' => $this->cvService->isComplete($cv),
-            'canEdit' => $canEdit,
-            'canPublish' => $this->isGranted(CurriculumVitaeVoter::PUBLISH, $cv),
-            'canLike' => $this->isGranted(CurriculumVitaeVoter::LIKE, $cv),
-            'liked' => $liked,
-            'likeCount' => $this->likes->countByCv($cv),
-            'published' => $cv->getStatus() === CvStatus::Published->value,
-        ]);
-    }
-
     private function requireCv(int $id): CurriculumVitae
     {
         return $this->cvs->findOneWithOwnerAndPosition($id) ?? throw $this->createNotFoundException();
@@ -266,44 +188,17 @@ class CvController extends AbstractController
         return $user;
     }
 
-    /**
-     * @return array<int, Attribute>
-     */
-    private function editableAttributes(CurriculumVitae $cv): array
+    private function selectedPositionId(Request $request): ?int
     {
-        $position = $cv->getPosition() ?? throw $this->createNotFoundException();
-        $this->positions->findOneWithTemplate((int) $position->getId());
-
-        $allowed = [];
-        foreach ($this->attributes->findBuiltIns() as $attribute) {
-            if ($attribute->getId() !== null) {
-                $allowed[$attribute->getId()] = $attribute;
-            }
+        $positionId = $request->request->getInt('position_id');
+        if ($positionId !== 0) {
+            return $positionId;
         }
 
-        foreach ($position->getPositionAttributes() as $positionAttribute) {
-            $attribute = $positionAttribute->getAttribute();
-            if ($attribute?->getId() !== null) {
-                $allowed[$attribute->getId()] = $attribute;
-            }
-        }
+        $ids = array_map(static fn (mixed $id): int => (int) $id, (array) $request->request->all('ids'));
+        $ids = array_values(array_filter($ids, static fn (int $id): bool => $id > 0));
 
-        return $allowed;
-    }
-
-    /**
-     * @param array<string, mixed> $raw
-     */
-    private function parsedValue(array $raw): mixed
-    {
-        if (\array_key_exists('from', $raw) || \array_key_exists('to', $raw)) {
-            return [
-                'from' => (string) ($raw['from'] ?? ''),
-                'to' => (string) ($raw['to'] ?? ''),
-            ];
-        }
-
-        return $raw['value'] ?? null;
+        return \count($ids) === 1 ? $ids[0] : null;
     }
 
     private function wantsJson(Request $request): bool

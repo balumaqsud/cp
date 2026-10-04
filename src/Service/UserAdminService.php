@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\User;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class UserAdminService
@@ -55,6 +56,73 @@ final class UserAdminService
         $user->getDiscussionPosts()->toArray();
         $this->entityManager->remove($user);
         $this->entityManager->flush();
+    }
+
+    /**
+     * @param list<User> $users
+     * @return array{applied: int, skippedSelf: bool, inUse: bool}
+     */
+    public function applyBlock(array $users, User $actor, bool $blocked): array
+    {
+        return $this->applySkippingSelf($users, function (User $user) use ($actor, $blocked): void {
+            $this->setBlocked($user, $actor, $blocked);
+        });
+    }
+
+    /**
+     * @param list<User> $users
+     * @return array{applied: int, skippedSelf: bool, inUse: bool}
+     */
+    public function applyRoles(array $users, string $role, bool $assign): array
+    {
+        foreach ($users as $user) {
+            if ($assign) {
+                $this->addRole($user, $role);
+            } else {
+                $this->removeRole($user, $role);
+            }
+        }
+
+        return ['applied' => \count($users), 'skippedSelf' => false, 'inUse' => false];
+    }
+
+    /**
+     * @param list<User> $users
+     * @return array{applied: int, skippedSelf: bool, inUse: bool}
+     */
+    public function deleteSelected(array $users, User $actor): array
+    {
+        return $this->applySkippingSelf($users, function (User $user) use ($actor): void {
+            $this->delete($user, $actor);
+        });
+    }
+
+    /**
+     * @param list<User> $users
+     * @param callable(User): void $apply
+     * @return array{applied: int, skippedSelf: bool, inUse: bool}
+     */
+    private function applySkippingSelf(array $users, callable $apply): array
+    {
+        $applied = 0;
+        $skippedSelf = false;
+        foreach ($users as $user) {
+            try {
+                $apply($user);
+                ++$applied;
+            } catch (\InvalidArgumentException $exception) {
+                if ($exception->getMessage() === 'user.flash.cannot_self') {
+                    $skippedSelf = true;
+                    continue;
+                }
+
+                throw $exception;
+            } catch (ForeignKeyConstraintViolationException) {
+                return ['applied' => $applied, 'skippedSelf' => $skippedSelf, 'inUse' => true];
+            }
+        }
+
+        return ['applied' => $applied, 'skippedSelf' => $skippedSelf, 'inUse' => false];
     }
 
     private function assertNotSelf(User $user, User $actor): void

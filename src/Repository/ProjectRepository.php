@@ -27,6 +27,14 @@ class ProjectRepository extends ServiceEntityRepository
         return $this->findBy(['owner' => $owner], ['startDate' => 'DESC']);
     }
 
+    public function findOneByOwner(User $owner, int $id): ?Project
+    {
+        return $this->findOneBy([
+            'id' => $id,
+            'owner' => $owner,
+        ]);
+    }
+
     /**
      * @param list<int> $ids
      * @return list<Project>

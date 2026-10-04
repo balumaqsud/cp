@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Attribute;
+use App\DTO\SalesforceCrmDTO;
 use App\Entity\Project;
 use App\Entity\User;
 use App\Form\ProjectType;
-use App\Repository\AttributeRepository;
-use App\Repository\AttributeValueRepository;
-use App\Repository\CurriculumVitaeRepository;
+use App\Form\SalesforceCrmType;
 use App\Repository\ProjectRepository;
-use App\Enum\CvStatus;
 use App\Repository\UserRepository;
 use App\Security\Voter\ProfileVoter;
 use App\Service\CvService;
 use App\Service\ProfileValueService;
+use App\Service\ProfileViewService;
+use App\Service\ProjectService;
 use App\Service\RecentAttributeStore;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\SalesforceCrmService;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,14 +29,13 @@ class ProfileController extends AbstractController
 {
     public function __construct(
         private readonly UserRepository $users,
-        private readonly AttributeRepository $attributes,
-        private readonly AttributeValueRepository $attributeValues,
         private readonly ProjectRepository $projects,
-        private readonly CurriculumVitaeRepository $cvs,
         private readonly ProfileValueService $profileValues,
+        private readonly ProfileViewService $profileView,
+        private readonly ProjectService $projectService,
         private readonly CvService $cvService,
         private readonly RecentAttributeStore $recentAttributes,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly SalesforceCrmService $salesforceCrm,
     ) {
     }
 
@@ -62,24 +61,8 @@ class ProfileController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $allowed = $this->editableAttributes($profileUser);
-        $items = [];
-        foreach ($request->request->all('values') as $attributeId => $raw) {
-            $attributeId = (int) $attributeId;
-            if (!isset($allowed[$attributeId]) || !\is_array($raw)) {
-                continue;
-            }
-
-            $versionRaw = $raw['version'] ?? '';
-            $items[] = [
-                'attributeId' => $attributeId,
-                'value' => $this->parsedValue($raw),
-                'version' => $versionRaw === '' ? null : (int) $versionRaw,
-            ];
-        }
-
         try {
-            $versions = $this->profileValues->upsertMany($profileUser, $items, $allowed);
+            $versions = $this->profileValues->saveSubmitted($profileUser, $request->request->all('values'));
         } catch (OptimisticLockException) {
             $this->addFlash('danger', 'profile.flash.conflict');
 
@@ -122,6 +105,35 @@ class ProfileController extends AbstractController
         };
     }
 
+    #[Route('/profile/{id}/crm', name: 'app_profile_crm', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function crm(Request $request, int $id): Response
+    {
+        $profileUser = $this->requireProfileUser($id);
+        $this->denyAccessUnlessGranted(ProfileVoter::EDIT, $profileUser);
+
+        $crm = new SalesforceCrmDTO();
+        $form = $this->createForm(SalesforceCrmType::class, $crm);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->salesforceCrm->push($profileUser, $crm);
+            } catch (\RuntimeException $exception) {
+                $this->addFlash('danger', $exception->getMessage() === 'not_configured'
+                    ? 'crm.flash.not_configured'
+                    : 'crm.flash.failed');
+
+                return $this->renderCrm($profileUser, $form);
+            }
+
+            $this->addFlash('success', 'crm.flash.created');
+
+            return $this->redirectToRoute('app_profile_show', ['id' => $profileUser->getId()]);
+        }
+
+        return $this->renderCrm($profileUser, $form);
+    }
+
     #[Route('/profile/{id}/projects/new', name: 'app_profile_project_new', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function newProject(Request $request, int $id): Response
     {
@@ -139,9 +151,8 @@ class ProfileController extends AbstractController
     {
         $profileUser = $this->requireProfileUser($id);
         $this->denyAccessUnlessGranted(ProfileVoter::EDIT, $profileUser);
-        $project = $this->requireOwnedProject($profileUser, $projectId);
 
-        return $this->handleProjectForm($request, $profileUser, $project);
+        return $this->handleProjectForm($request, $profileUser, $this->requireOwnedProject($profileUser, $projectId));
     }
 
     #[Route('/profile/{id}/projects/bulk', name: 'app_profile_project_bulk', methods: ['POST'], requirements: ['id' => '\d+'])]
@@ -177,17 +188,12 @@ class ProfileController extends AbstractController
             return $this->redirectToCvs($profileUser);
         }
 
-        $selected = $this->cvs->findByUserAndIds($profileUser, $this->selectedIds($request));
-        if ($selected === []) {
+        if ($this->cvService->deleteForUser($profileUser, $this->selectedIds($request)) === 0) {
             $this->addFlash('danger', 'profile.flash.select_one');
 
             return $this->redirectToCvs($profileUser);
         }
 
-        foreach ($selected as $cv) {
-            $this->entityManager->remove($cv);
-        }
-        $this->entityManager->flush();
         $this->addFlash('success', 'profile.flash.cvs_deleted');
 
         return $this->redirectToCvs($profileUser);
@@ -201,49 +207,21 @@ class ProfileController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $values = $this->attributeValues->findEntitiesIndexedByAttributeId($profileUser);
-        $infoAttributes = [];
-        foreach ($values as $row) {
-            $attribute = $row->getAttribute();
-            if ($attribute !== null && !$attribute->isBuiltIn()) {
-                $infoAttributes[] = $attribute;
-            }
-        }
+        return $this->render('profile/show.html.twig', $this->profileView->build(
+            $profileUser,
+            $this->requireCurrentUser(),
+            $isPublicView,
+            $this->isGranted(ProfileVoter::EDIT, $profileUser),
+            $this->safeTab($tab),
+        ));
+    }
 
-        $selectedInfoIds = array_map(
-            static fn (Attribute $attribute): int => (int) $attribute->getId(),
-            $infoAttributes,
-        );
-
-        $available = [];
-        if (!$isPublicView) {
-            foreach ($this->attributes->findLibrary() as $attribute) {
-                if (!\in_array($attribute->getId(), $selectedInfoIds, true)) {
-                    $available[] = $attribute;
-                }
-            }
-        }
-
-        $cvs = $this->cvService->listForProfile($profileUser, $this->requireCurrentUser());
-        if ($isPublicView) {
-            $cvs = array_values(array_filter(
-                $cvs,
-                static fn ($cv): bool => $cv->getStatus() === CvStatus::Published->value,
-            ));
-        }
-
-        return $this->render('profile/show.html.twig', [
+    private function renderCrm(User $profileUser, FormInterface $form): Response
+    {
+        return $this->render('profile/crm.html.twig', [
+            'form' => $form,
             'profileUser' => $profileUser,
-            'tab' => $this->safeTab($tab),
-            'canEdit' => $this->isGranted(ProfileVoter::EDIT, $profileUser),
-            'isPublicView' => $isPublicView,
-            'builtIns' => $this->attributes->findBuiltIns(),
-            'infoAttributes' => $infoAttributes,
-            'availableAttributes' => $available,
-            'values' => $values,
-            'projects' => $this->projects->findByOwner($profileUser),
-            'cvs' => $cvs,
-            'tagSuggestions' => $this->projects->findDistinctTags(),
+            ...$this->profileView->crmFields($profileUser),
         ]);
     }
 
@@ -254,11 +232,7 @@ class ProfileController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $isNew = $project->getId() === null;
-            $project->touch();
-            if ($isNew) {
-                $this->entityManager->persist($project);
-            }
-            $this->entityManager->flush();
+            $this->projectService->save($project);
             $this->addFlash('success', $isNew ? 'profile.flash.project_created' : 'profile.flash.project_updated');
 
             return $this->redirectToProjects($profileUser);
@@ -274,17 +248,14 @@ class ProfileController extends AbstractController
 
     private function addLibraryAttribute(Request $request, User $profileUser): Response
     {
-        $attribute = $this->attributes->find($request->request->getInt('attribute_id'));
-        if (!$attribute instanceof Attribute || $attribute->isBuiltIn()) {
+        $attributeId = $this->profileValues->attachLibrary($profileUser, $request->request->getInt('attribute_id'));
+        if ($attributeId === null) {
             $this->addFlash('danger', 'profile.flash.select_attribute');
 
             return $this->redirectToInfo($profileUser);
         }
 
-        $this->profileValues->attachLibraryAttribute($profileUser, $attribute);
-        if ($attribute->getId() !== null) {
-            $this->recentAttributes->remember([$attribute->getId()]);
-        }
+        $this->recentAttributes->remember([$attributeId]);
         $this->addFlash('success', 'profile.flash.attribute_added');
 
         return $this->redirectToInfo($profileUser);
@@ -327,17 +298,12 @@ class ProfileController extends AbstractController
      */
     private function deleteProjects(User $profileUser, array $ids): Response
     {
-        $selected = $this->projects->findByOwnerAndIds($profileUser, $ids);
-        if ($selected === []) {
+        if ($this->projectService->deleteForOwner($profileUser, $ids) === 0) {
             $this->addFlash('danger', 'profile.flash.select_one');
 
             return $this->redirectToProjects($profileUser);
         }
 
-        foreach ($selected as $project) {
-            $this->entityManager->remove($project);
-        }
-        $this->entityManager->flush();
         $this->addFlash('success', 'profile.flash.project_deleted');
 
         return $this->redirectToProjects($profileUser);
@@ -345,12 +311,7 @@ class ProfileController extends AbstractController
 
     private function requireOwnedProject(User $profileUser, int $projectId): Project
     {
-        $project = $this->projects->find($projectId);
-        if (!$project instanceof Project || $project->getOwner()?->getId() !== $profileUser->getId()) {
-            throw $this->createNotFoundException();
-        }
-
-        return $project;
+        return $this->projects->findOneByOwner($profileUser, $projectId) ?? throw $this->createNotFoundException();
     }
 
     private function requireCurrentUser(): User
@@ -371,43 +332,6 @@ class ProfileController extends AbstractController
         }
 
         return $this->users->find($id) ?? throw $this->createNotFoundException();
-    }
-
-    /**
-     * @return array<int, Attribute>
-     */
-    private function editableAttributes(User $profileUser): array
-    {
-        $allowed = [];
-        foreach ($this->attributes->findBuiltIns() as $attribute) {
-            if ($attribute->getId() !== null) {
-                $allowed[$attribute->getId()] = $attribute;
-            }
-        }
-
-        foreach ($this->attributeValues->findEntitiesIndexedByAttributeId($profileUser) as $row) {
-            $attribute = $row->getAttribute();
-            if ($attribute?->getId() !== null) {
-                $allowed[$attribute->getId()] = $attribute;
-            }
-        }
-
-        return $allowed;
-    }
-
-    /**
-     * @param array<string, mixed> $raw
-     */
-    private function parsedValue(array $raw): mixed
-    {
-        if (\array_key_exists('from', $raw) || \array_key_exists('to', $raw)) {
-            return [
-                'from' => (string) ($raw['from'] ?? ''),
-                'to' => (string) ($raw['to'] ?? ''),
-            ];
-        }
-
-        return $raw['value'] ?? null;
     }
 
     /**

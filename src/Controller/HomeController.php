@@ -9,6 +9,7 @@ use App\Repository\CurriculumVitaeRepository;
 use App\Repository\PositionRepository;
 use App\Repository\ProjectRepository;
 use App\Repository\UserRepository;
+use App\Service\PositionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,6 +18,7 @@ class HomeController extends AbstractController
 {
     public function __construct(
         private readonly PositionRepository $positions,
+        private readonly PositionService $positionService,
         private readonly ProjectRepository $projects,
         private readonly CurriculumVitaeRepository $cvs,
         private readonly UserRepository $users,
@@ -27,16 +29,9 @@ class HomeController extends AbstractController
     public function index(): Response
     {
         $user = $this->getUser();
-        if ($user instanceof User && $user->isRecruiter()) {
-            $latest = $this->positions->findLatestManaged(10);
-        } elseif ($user instanceof User && $user->getId() !== null) {
-            $latest = $this->positions->findVisibleToCandidate($user->getId(), 10);
-        } else {
-            $latest = $this->positions->findLatest(10);
-        }
 
         return $this->render('home/index.html.twig', [
-            'latest' => $latest,
+            'latest' => $this->positionService->listFor($user instanceof User ? $user : null, 10),
             'popular' => $this->positions->findPopular(5),
             'tagCloud' => $this->projects->tagCloud(),
             'stats' => [

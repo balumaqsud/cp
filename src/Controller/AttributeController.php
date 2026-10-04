@@ -9,9 +9,9 @@ use App\Form\AttributeFormType;
 use App\Repository\AttributeRepository;
 use App\Repository\CategoryRepository;
 use App\Security\Voter\AttributeVoter;
+use App\Service\AttributeService;
 use App\Service\RecentAttributeStore;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,7 +23,7 @@ class AttributeController extends AbstractController
         private readonly AttributeRepository $attributes,
         private readonly CategoryRepository $categories,
         private readonly RecentAttributeStore $recentAttributes,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly AttributeService $attributeService,
     ) {
     }
 
@@ -58,9 +58,7 @@ class AttributeController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $attribute->setName(trim($attribute->getName()));
-            $this->entityManager->persist($attribute);
-            $this->entityManager->flush();
+            $this->attributeService->save($attribute);
             $this->addFlash('success', 'attribute.flash.created');
 
             return $this->redirectToRoute('app_attribute_index');
@@ -94,8 +92,7 @@ class AttributeController extends AbstractController
                 return $this->redirectToRoute('app_attribute_edit', ['id' => $attribute->getId()]);
             }
 
-            $attribute->setName(trim($attribute->getName()));
-            $this->entityManager->flush();
+            $this->attributeService->save($attribute);
             $this->addFlash('success', 'attribute.flash.updated');
 
             return $this->redirectToRoute('app_attribute_index');
@@ -148,36 +145,21 @@ class AttributeController extends AbstractController
      */
     private function deleteSelected(array $ids): Response
     {
-        $selected = $this->attributes->findByIds($ids);
-        $deleted = 0;
-        $skippedBuiltIn = false;
-
-        foreach ($selected as $attribute) {
-            if (!$attribute->isDeletable()) {
-                $skippedBuiltIn = true;
-                continue;
-            }
-
-            $this->entityManager->remove($attribute);
-            ++$deleted;
-        }
-
         try {
-            $this->entityManager->flush();
+            $result = $this->attributeService->deleteSelected($this->attributes->findByIds($ids));
         } catch (ForeignKeyConstraintViolationException) {
-            $this->entityManager->clear();
             $this->addFlash('danger', 'attribute.flash.in_use');
 
             return $this->redirectToRoute('app_attribute_index');
         }
 
-        if ($deleted > 0) {
+        if ($result['deleted'] > 0) {
             $this->addFlash('success', 'attribute.flash.deleted');
         }
-        if ($skippedBuiltIn) {
+        if ($result['skippedBuiltIn']) {
             $this->addFlash('warning', 'attribute.flash.builtin_locked');
         }
-        if ($deleted === 0 && !$skippedBuiltIn) {
+        if ($result['deleted'] === 0 && !$result['skippedBuiltIn']) {
             $this->addFlash('danger', 'attribute.flash.select_one');
         }
 

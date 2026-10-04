@@ -8,6 +8,7 @@ use App\Entity\Attribute;
 use App\Entity\AttributeValue;
 use App\Entity\User;
 use App\Enum\AttributeType;
+use App\Repository\AttributeRepository;
 use App\Repository\AttributeValueRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\OptimisticLockException;
@@ -15,9 +16,48 @@ use Doctrine\ORM\OptimisticLockException;
 final class ProfileValueService
 {
     public function __construct(
+        private readonly AttributeRepository $attributes,
         private readonly AttributeValueRepository $attributeValues,
         private readonly EntityManagerInterface $entityManager,
     ) {
+    }
+
+    /**
+     * @param array<mixed> $submitted
+     * @param array<int, Attribute>|null $allowed
+     * @return array<int, int> attribute id → new version
+     */
+    public function saveSubmitted(User $user, array $submitted, ?array $allowed = null): array
+    {
+        $allowed ??= $this->editableAttributes($user);
+        $items = [];
+        foreach ($submitted as $attributeId => $raw) {
+            $attributeId = (int) $attributeId;
+            if (!isset($allowed[$attributeId]) || !\is_array($raw)) {
+                continue;
+            }
+
+            $versionRaw = $raw['version'] ?? '';
+            $items[] = [
+                'attributeId' => $attributeId,
+                'value' => $this->parsedValue($raw),
+                'version' => $versionRaw === '' ? null : (int) $versionRaw,
+            ];
+        }
+
+        return $this->upsertMany($user, $items, $allowed);
+    }
+
+    public function attachLibrary(User $user, int $attributeId): ?int
+    {
+        $attribute = $this->attributes->find($attributeId);
+        if (!$attribute instanceof Attribute || $attribute->isBuiltIn() || $attribute->getId() === null) {
+            return null;
+        }
+
+        $this->attachLibraryAttribute($user, $attribute);
+
+        return $attribute->getId();
     }
 
     public function upsert(User $user, Attribute $attribute, mixed $value, ?int $expectedVersion = null): AttributeValue
@@ -122,6 +162,43 @@ final class ProfileValueService
         }
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * @return array<int, Attribute>
+     */
+    private function editableAttributes(User $profileUser): array
+    {
+        $allowed = [];
+        foreach ($this->attributes->findBuiltIns() as $attribute) {
+            if ($attribute->getId() !== null) {
+                $allowed[$attribute->getId()] = $attribute;
+            }
+        }
+
+        foreach ($this->attributeValues->findEntitiesIndexedByAttributeId($profileUser) as $row) {
+            $attribute = $row->getAttribute();
+            if ($attribute?->getId() !== null) {
+                $allowed[$attribute->getId()] = $attribute;
+            }
+        }
+
+        return $allowed;
+    }
+
+    /**
+     * @param array<string, mixed> $raw
+     */
+    private function parsedValue(array $raw): mixed
+    {
+        if (\array_key_exists('from', $raw) || \array_key_exists('to', $raw)) {
+            return [
+                'from' => (string) ($raw['from'] ?? ''),
+                'to' => (string) ($raw['to'] ?? ''),
+            ];
+        }
+
+        return $raw['value'] ?? null;
     }
 
     private function normalize(Attribute $attribute, mixed $value): mixed

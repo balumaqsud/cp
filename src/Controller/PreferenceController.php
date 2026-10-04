@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\User;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\SecurityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,12 +15,11 @@ use Symfony\Component\Routing\Attribute\Route;
 class PreferenceController extends AbstractController
 {
     #[Route('/preferences/locale/{locale}', name: 'app_locale', requirements: ['locale' => 'en|uz'])]
-    public function locale(string $locale, Request $request, EntityManagerInterface $entityManager): Response
+    public function locale(string $locale, Request $request, SecurityService $securityService): Response
     {
         $user = $this->getUser();
         if ($user instanceof User) {
-            $user->setLocale($locale);
-            $entityManager->flush();
+            $securityService->saveLocale($user, $locale);
         }
 
         $response = $this->redirectToReferer($request);
@@ -30,12 +29,11 @@ class PreferenceController extends AbstractController
     }
 
     #[Route('/preferences/theme/{theme}', name: 'app_theme', requirements: ['theme' => 'light|dark'])]
-    public function theme(string $theme, Request $request, EntityManagerInterface $entityManager): Response
+    public function theme(string $theme, Request $request, SecurityService $securityService): Response
     {
         $user = $this->getUser();
         if ($user instanceof User) {
-            $user->setTheme($theme);
-            $entityManager->flush();
+            $securityService->saveTheme($user, $theme);
         }
 
         $response = $this->redirectToReferer($request);

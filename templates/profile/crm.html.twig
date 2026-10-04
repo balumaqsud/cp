@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'crm.heading'|trans }}{% endblock %}
+
+{% block body %}
+    <h1 class="h4 mb-3">{{ 'crm.heading'|trans }}</h1>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <p class="mb-1"><span class="text-muted">{{ 'profile.email'|trans }}:</span> {{ profileUser.email }}</p>
+            {% for attribute in builtIns %}
+                {% if attribute.name in ['First Name', 'Last Name', 'Location'] %}
+                    {% set row = values[attribute.id]|default(null) %}
+                    <p class="mb-1">
+                        <span class="text-muted">{{ attribute.name }}:</span>
+                        {{ row and row.value ? row.value : '—' }}
+                    </p>
+                {% endif %}
+            {% endfor %}
+
+            {{ form_start(form, {attr: {class: 'mt-3'}}) }}
+                {{ form_row(form.company) }}
+                {{ form_row(form.phone) }}
+                {{ form_row(form.title) }}
+                {{ form_row(form.notes) }}
+                {{ form_row(form.newsletter) }}
+                <button type="submit" class="btn btn-primary">{{ 'attribute.save'|trans }}</button>
+                <a class="btn btn-outline-secondary" href="{{ path('app_profile_show', {id: profileUser.id}) }}">{{ 'attribute.cancel'|trans }}</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

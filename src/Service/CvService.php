@@ -161,6 +161,23 @@ final class CvService
         return $this->filterByOwnerAccess($cvs);
     }
 
+    /**
+     * @param list<int> $ids
+     */
+    public function deleteForUser(User $owner, array $ids): int
+    {
+        $selected = $this->cvs->findByUserAndIds($owner, $ids);
+        foreach ($selected as $cv) {
+            $this->entityManager->remove($cv);
+        }
+
+        if ($selected !== []) {
+            $this->entityManager->flush();
+        }
+
+        return \count($selected);
+    }
+
     public function toggleLike(User $recruiter, CurriculumVitae $cv): bool
     {
         $existing = $this->likes->findOneByRecruiterAndCv($recruiter, $cv);

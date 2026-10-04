@@ -12,7 +12,6 @@ use App\Form\ChooseRoleType;
 use App\Form\LoginType;
 use App\Form\RegistrationType;
 use App\Service\SecurityService;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\FormError;
@@ -79,7 +78,7 @@ class SecurityController extends AbstractController
 
     #[Route('/choose-role', name: 'app_choose_role', methods: ['GET', 'POST'])]
     #[IsGranted('ROLE_USER')]
-    public function chooseRole(Request $request, EntityManagerInterface $entityManager, Security $security): Response
+    public function chooseRole(Request $request, SecurityService $securityService, Security $security): Response
     {
         $user = $this->getUser();
         if (!$user instanceof User) {
@@ -96,8 +95,7 @@ class SecurityController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             /** @var string $role */
             $role = $form->get('role')->getData();
-            $user->setRoles([$role]);
-            $entityManager->flush();
+            $securityService->chooseRole($user, $role);
             $security->login($user, 'form_login', 'main');
 
             return $this->redirectToRoute('app_home');

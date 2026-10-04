@@ -4,16 +4,94 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\DiscussionPost;
 use App\Entity\Position;
 use App\Entity\PositionAccessRule;
 use App\Entity\PositionAttribute;
+use App\Entity\User;
+use App\Repository\PositionRepository;
+use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class PositionService
 {
     public function __construct(
+        private readonly PositionRepository $positions,
         private readonly EntityManagerInterface $entityManager,
     ) {
+    }
+
+    /**
+     * @return list<Position>
+     */
+    public function listFor(?User $user, ?int $limit = null): array
+    {
+        if ($user instanceof User && $user->isRecruiter()) {
+            return $limit === null
+                ? $this->positions->findAllManaged()
+                : $this->positions->findLatestManaged($limit);
+        }
+
+        if ($user instanceof User && $user->getId() !== null) {
+            return $this->positions->findVisibleToCandidate($user->getId(), $limit);
+        }
+
+        return $limit === null
+            ? $this->positions->findPublic()
+            : $this->positions->findLatest($limit);
+    }
+
+    public function save(Position $position): void
+    {
+        if ($position->getId() === null) {
+            $this->entityManager->persist($position);
+        }
+
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @param list<Position> $positions
+     */
+    public function deleteMany(array $positions): void
+    {
+        foreach ($positions as $position) {
+            $this->entityManager->remove($position);
+        }
+
+        try {
+            $this->entityManager->flush();
+        } catch (ForeignKeyConstraintViolationException $exception) {
+            $this->entityManager->clear();
+            throw $exception;
+        }
+    }
+
+    /**
+     * @param list<Position> $positions
+     */
+    public function duplicateAll(array $positions): Position
+    {
+        $last = null;
+        foreach ($positions as $position) {
+            $last = $this->duplicate($position);
+        }
+
+        if (!$last instanceof Position) {
+            throw new \InvalidArgumentException('position.flash.select_one');
+        }
+
+        return $last;
+    }
+
+    public function addDiscussionPost(Position $position, User $author, string $content): void
+    {
+        $post = new DiscussionPost();
+        $post->setPosition($position);
+        $post->setAuthor($author);
+        $post->setContent($content);
+        $this->entityManager->persist($post);
+        $this->entityManager->flush();
     }
 
     public function duplicate(Position $source): Position

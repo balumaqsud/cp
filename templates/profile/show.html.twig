@@ -23,7 +23,12 @@
                 </p>
             </div>
             {% if canEdit %}
-                <small class="text-muted" data-autosave-target="status"></small>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted" data-autosave-target="status"></small>
+                    <a class="btn btn-outline-primary btn-sm" href="{{ path('app_profile_crm', {id: profileUser.id}) }}">
+                        {{ 'crm.action'|trans }}
+                    </a>
+                </div>
             {% endif %}
         </div>
 

@@ -203,7 +203,7 @@ search:
     cvs: CV lar
     empty: Mos yozuv yoʻq.
     prompt: Sarlavhadagi qidiruvga soʻz yozing yoki bosh sahifadan teg tanlang.
-    tag: 'Teg: %tag%'
+    tag: "Teg: %tag%"
 home:
     title: CV boshqaruvi
     lead: Ochiq lavozimlar, soʻnggi faollik va platforma statistikasi.

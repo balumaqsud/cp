@@ -80,6 +80,7 @@ final class SalesforceClient
         $data = $this->post($token['instance_url'].'/services/data/'.self::API_VERSION.'/sobjects/'.$object, [
             'headers' => [
                 'Authorization' => 'Bearer '.$token['access_token'],
+                'Sforce-Duplicate-Rule-Header' => 'allowSave=true',
             ],
             'json' => $fields,
         ]);

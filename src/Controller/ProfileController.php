@@ -115,17 +115,47 @@ class ProfileController extends AbstractController
         $form = $this->createForm(SalesforceCrmType::class, $crm);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        $submitted = $form->isSubmitted();
+        $valid = $submitted && $form->isValid();
+        // #region agent log
+        file_put_contents('/Users/olloberganabdullaev/Desktop/course-project/.cursor/debug-b15be3.log', json_encode(['sessionId' => 'b15be3', 'hypothesisId' => 'A', 'location' => 'ProfileController.php:crm', 'message' => 'crm form state', 'data' => ['submitted' => $submitted, 'valid' => $valid, 'errorCount' => $submitted ? $form->getErrors(true)->count() : 0], 'timestamp' => (int) round(microtime(true) * 1000)])."\n", FILE_APPEND);
+        // #endregion
+        if ($submitted && !$valid) {
+            $details = [];
+            foreach ($form->getErrors(true) as $error) {
+                $origin = $error->getOrigin();
+                $cause = $error->getCause();
+                $details[] = [
+                    'field' => $origin?->getName() ?? 'form',
+                    'template' => $error->getMessageTemplate(),
+                    'cause' => $cause !== null ? $cause::class : 'none',
+                ];
+            }
+            // #region agent log
+            file_put_contents('/Users/olloberganabdullaev/Desktop/course-project/.cursor/debug-b15be3.log', json_encode(['sessionId' => 'b15be3', 'hypothesisId' => 'A', 'location' => 'ProfileController.php:crm', 'message' => 'crm form errors', 'data' => ['errors' => $details], 'timestamp' => (int) round(microtime(true) * 1000)])."\n", FILE_APPEND);
+            // #endregion
+        }
+        if ($submitted && $valid) {
             try {
                 $this->salesforceCrm->push($profileUser, $crm);
             } catch (\RuntimeException $exception) {
-                $this->addFlash('danger', $exception->getMessage() === 'not_configured'
+                $reason = $exception->getMessage();
+                // #region agent log
+                file_put_contents('/Users/olloberganabdullaev/Desktop/course-project/.cursor/debug-b15be3.log', json_encode(['sessionId' => 'b15be3', 'hypothesisId' => $reason === 'not_configured' ? 'B' : 'C', 'location' => 'ProfileController.php:crm', 'message' => 'crm push failed', 'data' => ['reason' => $reason === 'not_configured' || $reason === 'salesforce' ? $reason : 'other'], 'timestamp' => (int) round(microtime(true) * 1000)])."\n", FILE_APPEND);
+                // #endregion
+                $this->addFlash('danger', $reason === 'not_configured'
                     ? 'crm.flash.not_configured'
                     : 'crm.flash.failed');
 
-                return $this->renderCrm($profileUser, $form);
+                // #region agent log
+                file_put_contents('/Users/olloberganabdullaev/Desktop/course-project/.cursor/debug-b15be3.log', json_encode(['sessionId' => 'b15be3', 'runId' => 'post-fix', 'hypothesisId' => 'E', 'location' => 'ProfileController.php:crm', 'message' => 'crm failure response', 'data' => ['status' => Response::HTTP_UNPROCESSABLE_ENTITY], 'timestamp' => (int) round(microtime(true) * 1000)])."\n", FILE_APPEND);
+                // #endregion
+                return $this->renderCrm($profileUser, $form, Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
+            // #region agent log
+            file_put_contents('/Users/olloberganabdullaev/Desktop/course-project/.cursor/debug-b15be3.log', json_encode(['sessionId' => 'b15be3', 'hypothesisId' => 'D', 'location' => 'ProfileController.php:crm', 'message' => 'crm push succeeded', 'data' => ['redirect' => 'app_profile_show'], 'timestamp' => (int) round(microtime(true) * 1000)])."\n", FILE_APPEND);
+            // #endregion
             $this->addFlash('success', 'crm.flash.created');
 
             return $this->redirectToRoute('app_profile_show', ['id' => $profileUser->getId()]);
@@ -216,13 +246,13 @@ class ProfileController extends AbstractController
         ));
     }
 
-    private function renderCrm(User $profileUser, FormInterface $form): Response
+    private function renderCrm(User $profileUser, FormInterface $form, int $status = Response::HTTP_OK): Response
     {
         return $this->render('profile/crm.html.twig', [
             'form' => $form,
             'profileUser' => $profileUser,
             ...$this->profileView->crmFields($profileUser),
-        ]);
+        ], new Response(status: $status));
     }
 
     private function handleProjectForm(Request $request, User $profileUser, Project $project): Response

@@ -1,0 +1,6 @@
+{"sessionId":"b15be3","hypothesisId":"A","location":"ProfileController.php:crm","message":"crm form state","data":{"submitted":false,"valid":false,"errorCount":0},"timestamp":1791196924513}
+{"sessionId":"b15be3","hypothesisId":"A","location":"ProfileController.php:crm","message":"crm form state","data":{"submitted":true,"valid":true,"errorCount":0},"timestamp":1791196924611}
+{"sessionId":"b15be3","hypothesisId":"B","location":"SalesforceCrmService.php:push","message":"salesforce configured","data":{"configured":true},"timestamp":1791196924611}
+{"sessionId":"b15be3","hypothesisId":"C","location":"SalesforceClient.php:post","message":"salesforce http","data":{"status":400,"path":"\/services\/oauth2\/token","error":"invalid_grant","errorText":"authentication failure"},"timestamp":1791196927595}
+{"sessionId":"b15be3","hypothesisId":"C","location":"ProfileController.php:crm","message":"crm push failed","data":{"reason":"salesforce"},"timestamp":1791196927595}
+{"sessionId":"b15be3","runId":"post-fix","hypothesisId":"E","location":"ProfileController.php:crm","message":"crm failure response","data":{"status":422},"timestamp":1791196927595}

@@ -108,6 +108,24 @@ final class SalesforceClient
     {
         $response = $this->httpClient->request('POST', $url, $options);
         $status = $response->getStatusCode();
+        $path = (string) parse_url($url, PHP_URL_PATH);
+        $errorCode = null;
+        $errorText = null;
+        if ($status < 200 || $status >= 300) {
+            try {
+                $payload = $response->toArray(false);
+                $errorCode = isset($payload['error']) && \is_string($payload['error']) ? $payload['error'] : null;
+                $description = $payload['error_description'] ?? null;
+                if (\is_string($description) && preg_match('/^[A-Za-z0-9 .:,-]{1,80}$/', $description) === 1) {
+                    $errorText = $description;
+                }
+            } catch (\Throwable) {
+                $errorCode = null;
+            }
+        }
+        // #region agent log
+        file_put_contents('/Users/olloberganabdullaev/Desktop/course-project/.cursor/debug-b15be3.log', json_encode(['sessionId' => 'b15be3', 'hypothesisId' => $status >= 200 && $status < 300 ? 'D' : 'C', 'location' => 'SalesforceClient.php:post', 'message' => 'salesforce http', 'data' => ['status' => $status, 'path' => $path, 'error' => $errorCode, 'errorText' => $errorText], 'timestamp' => (int) round(microtime(true) * 1000)])."\n", FILE_APPEND);
+        // #endregion
         if ($status < 200 || $status >= 300) {
             throw new \RuntimeException('salesforce');
         }

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="cv_position_import_wizard_view_form" model="ir.ui.view">
+        <field name="name">cv.position.import.wizard.form</field>
+        <field name="model">cv.position.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="base_url"/>
+                    <field name="api_token"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button string="Cancel" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_cv_position_import" model="ir.actions.act_window">
+        <field name="name">Import</field>
+        <field name="res_model">cv.position.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_cv_import_wizard" name="Import" parent="menu_cv_import_root" action="action_cv_position_import" sequence="20"/>
+</odoo>

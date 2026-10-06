@@ -41,5 +41,6 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_cv_import_root" name="CV import" action="action_cv_position" sequence="80"/>
+    <menuitem id="menu_cv_import_root" name="CV import" sequence="80"/>
+    <menuitem id="menu_cv_position" name="Positions" parent="menu_cv_import_root" action="action_cv_position" sequence="10"/>
 </odoo>

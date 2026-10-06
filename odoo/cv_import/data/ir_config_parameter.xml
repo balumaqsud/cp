@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="config_cv_import_base_url" model="ir.config_parameter">
+            <field name="key">cv_import.base_url</field>
+            <field name="value">http://host.docker.internal:8000</field>
+        </record>
+    </data>
+</odoo>

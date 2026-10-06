@@ -1,3 +1,4 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_cv_position_user,cv.position.user,model_cv_position,base.group_user,1,1,1,1
 access_cv_position_attribute_user,cv.position.attribute.user,model_cv_position_attribute,base.group_user,1,1,1,1
+access_cv_position_import_wizard_user,cv.position.import.wizard.user,model_cv_position_import_wizard,base.group_user,1,1,1,1

@@ -45,6 +45,9 @@ class Position
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $company = null;
 
+    #[ORM\Column(length: 64, unique: true, nullable: true)]
+    private ?string $apiToken = null;
+
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $level = null;
 
@@ -170,6 +173,18 @@ class Position
     public function setCompany(?string $company): static
     {
         $this->company = $company;
+
+        return $this;
+    }
+
+    public function getApiToken(): ?string
+    {
+        return $this->apiToken;
+    }
+
+    public function setApiToken(?string $apiToken): static
+    {
+        $this->apiToken = $apiToken;
 
         return $this;
     }

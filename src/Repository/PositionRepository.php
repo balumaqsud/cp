@@ -288,6 +288,17 @@ class PositionRepository extends ServiceEntityRepository
         return $position;
     }
 
+    public function findOneByApiToken(string $token): ?Position
+    {
+        return $this->createQueryBuilder('p')
+            ->leftJoin('p.positionAttributes', 'pa')->addSelect('pa')
+            ->leftJoin('pa.attribute', 'attr')->addSelect('attr')
+            ->andWhere('p.apiToken = :token')
+            ->setParameter('token', $token)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
     /**
      * @param list<int|string> $ids
      * @return list<Position>

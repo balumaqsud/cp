@@ -9,6 +9,7 @@ use App\Entity\Position;
 use App\Entity\PositionAccessRule;
 use App\Entity\PositionAttribute;
 use App\Entity\User;
+use App\Repository\AttributeRepository;
 use App\Repository\PositionRepository;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ final class PositionService
 {
     public function __construct(
         private readonly PositionRepository $positions,
+        private readonly AttributeRepository $attributes,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -39,6 +41,49 @@ final class PositionService
         return $limit === null
             ? $this->positions->findPublic()
             : $this->positions->findLatest($limit);
+    }
+
+    /**
+     * @param list<array{title?: mixed, type?: mixed}> $attributes
+     * @return array{id: int, title: string, attached: list<string>, skipped: list<string>}
+     */
+    public function createExported(string $title, array $attributes): array
+    {
+        $position = new Position();
+        $position->setTitle($title);
+
+        $attached = [];
+        $skipped = [];
+        $sort = 0;
+        foreach ($attributes as $row) {
+            $name = trim((string) ($row['title'] ?? ''));
+            if ($name === '') {
+                continue;
+            }
+
+            $attribute = $this->attributes->findOneByName($name);
+            if ($attribute === null) {
+                $skipped[] = $name;
+                continue;
+            }
+
+            $link = new PositionAttribute();
+            $link->setAttribute($attribute);
+            $link->setSortOrder($sort);
+            $link->setIsRequired(true);
+            $position->addPositionAttribute($link);
+            $attached[] = $name;
+            ++$sort;
+        }
+
+        $this->save($position);
+
+        return [
+            'id' => (int) $position->getId(),
+            'title' => $position->getTitle(),
+            'attached' => $attached,
+            'skipped' => $skipped,
+        ];
     }
 
     public function save(Position $position): void

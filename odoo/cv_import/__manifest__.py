@@ -9,6 +9,7 @@
         'data/ir_config_parameter.xml',
         'views/cv_position_views.xml',
         'views/cv_position_import_views.xml',
+        'views/cv_position_export_views.xml',
     ],
     'installable': True,
     'application': True,

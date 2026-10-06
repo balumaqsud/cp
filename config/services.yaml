@@ -18,6 +18,7 @@ parameters:
     env(SALESFORCE_CLIENT_SECRET): ''
     env(SALESFORCE_USERNAME): ''
     env(SALESFORCE_PASSWORD): ''
+    env(ODOO_EXPORT_TOKEN): ''
 
 services:
     # default configuration for services in *this* file

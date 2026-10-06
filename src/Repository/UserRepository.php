@@ -43,6 +43,20 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         );
     }
 
+    /**
+     * @return list<string>
+     */
+    public function findAdminEmails(): array
+    {
+        /** @var list<string> $emails */
+        $emails = $this->getEntityManager()->getConnection()->fetchFirstColumn(
+            'SELECT email FROM users WHERE jsonb_exists(roles::jsonb, :role) AND is_blocked = false ORDER BY email',
+            ['role' => User::ROLE_ADMIN],
+        );
+
+        return $emails;
+    }
+
     public function countWithAnyRole(string ...$roles): int
     {
         if ($roles === []) {

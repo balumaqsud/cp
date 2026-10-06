@@ -6,7 +6,9 @@
     'depends': ['base'],
     'data': [
         'security/ir.model.access.csv',
+        'views/cv_position_views.xml',
     ],
     'installable': True,
+    'application': True,
     'license': 'LGPL-3',
 }

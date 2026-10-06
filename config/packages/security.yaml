@@ -38,3 +38,4 @@ security:
         - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/attributes, roles: ROLE_USER }
         - { path: ^/cvs, roles: ROLE_USER }
+        - { path: ^/support, roles: ROLE_USER }

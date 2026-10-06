@@ -262,3 +262,18 @@ crm:
         created: Salesforce da account va kontakt yaratildi.
         failed: Salesforce profilni saqlay olmadi.
         not_configured: Salesforce sozlanmagan.
+support:
+    link: Qoʻllab-quvvatlash chiptasini yaratish
+    help: Yordam
+    heading: Qoʻllab-quvvatlash chiptasini yaratish
+    help_text: Nima xato ketganini yozing. Ustuvorlik va qisqa mazmun yetarli.
+    summary: Mazmun
+    priority: Ustuvorlik
+    priority.High: Yuqori
+    priority.Average: Oʻrtacha
+    priority.Low: Past
+    flash:
+        created: Qoʻllab-quvvatlash chiptasi yuklandi.
+        failed: Qoʻllab-quvvatlash chiptasini yuklab boʻlmadi.
+        not_configured: Dropbox sozlanmagan.
+        no_admins: Bu chipta uchun admin emaili yoʻq.

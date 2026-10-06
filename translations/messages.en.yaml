@@ -262,3 +262,18 @@ crm:
         created: Account and contact created in Salesforce.
         failed: Salesforce could not save this profile.
         not_configured: Salesforce is not configured.
+support:
+    link: Create support ticket
+    help: Help
+    heading: Create support ticket
+    help_text: Tell us what went wrong. Priority and a short summary are enough.
+    summary: Summary
+    priority: Priority
+    priority.High: High
+    priority.Average: Average
+    priority.Low: Low
+    flash:
+        created: Support ticket uploaded.
+        failed: The support ticket could not be uploaded.
+        not_configured: Dropbox is not configured.
+        no_admins: No admin email is available for this ticket.

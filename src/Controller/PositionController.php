@@ -68,6 +68,38 @@ class PositionController extends AbstractController
         return $this->handleForm($request, $this->requirePosition($id));
     }
 
+    #[Route('/positions/{id}/api-token', name: 'app_position_api_token', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
+    public function apiTokenOdooApi(Request $request, int $id): Response
+    {
+        $this->denyAccessUnlessGranted(PositionVoter::MANAGE);
+
+        $position = $this->requirePosition($id);
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('position_api_token', $request->request->getString('_token'))) {
+                throw $this->createAccessDeniedException();
+            }
+
+            $position->setApiToken(bin2hex(random_bytes(32)));
+            $position->touch();
+            $this->positionService->save($position);
+            $this->addFlash('success', 'position.api_token.regenerated');
+
+            return $this->redirectToRoute('app_position_api_token', ['id' => $position->getId()]);
+        }
+
+        $token = $position->getApiToken();
+        if ($token === null || $token === '') {
+            $position->setApiToken(bin2hex(random_bytes(32)));
+            $position->touch();
+            $this->positionService->save($position);
+        }
+
+        return $this->render('position/api_token.html.twig', [
+            'position' => $position,
+        ]);
+    }
+
     #[Route('/positions/{id}', name: 'app_position_show', methods: ['GET', 'POST'], requirements: ['id' => '\d+'])]
     public function show(Request $request, int $id): Response
     {

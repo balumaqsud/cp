@@ -74,6 +74,12 @@ position:
     discussion_message: Xabar
     post: Yuborish
     no_posts: Hali xabar yoʻq.
+    api_token:
+        link: API token
+        heading: API token
+        help: Odoo shu token bilan faqat shu lavozimni import qiladi. Tokenni maxfiy saqlang.
+        regenerate: Tokenni yangilash
+        regenerated: API token yangilandi.
     flash:
         created: Lavozim yaratildi.
         updated: Lavozim yangilandi.

@@ -159,6 +159,11 @@
         <div class="mt-4">
             <button type="submit" class="btn btn-primary">{{ 'attribute.save'|trans }}</button>
             <a class="btn btn-outline-secondary" href="{{ path('app_position_index') }}">{{ 'attribute.cancel'|trans }}</a>
+            {% if position.id %}
+                <a class="btn btn-outline-primary btn-sm" href="{{ path('app_position_api_token', {id: position.id}) }}">
+                    {{ 'position.api_token.link'|trans }}
+                </a>
+            {% endif %}
         </div>
     {{ form_end(form) }}
 {% endblock %}

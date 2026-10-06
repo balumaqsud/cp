@@ -29,6 +29,7 @@ services:
       PASSWORD: odoo
     volumes:
       - odoo-web-data:/var/lib/odoo
+      - ./cv_import:/mnt/extra-addons/cv_import
     extra_hosts:
       - "host.docker.internal:host-gateway"
 

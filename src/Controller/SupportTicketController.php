@@ -36,7 +36,6 @@ final class SupportTicketController extends AbstractController
         $form->handleRequest($request);
 
         $from = $this->sanitizedFrom($form, $request, $origin);
-        $form->get('from')->setData($from);
 
         if ($form->isSubmitted() && $form->isValid()) {
             return $this->submit($this->requireUser(), $ticket, $from, $origin, $form);

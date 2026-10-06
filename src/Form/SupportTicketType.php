@@ -20,6 +20,7 @@ final class SupportTicketType extends AbstractType
         $builder
             ->add('summary', TextareaType::class, [
                 'label' => 'support.summary',
+                'empty_data' => '',
             ])
             ->add('priority', EnumType::class, [
                 'class' => SupportPriority::class,

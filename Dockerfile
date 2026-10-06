@@ -33,6 +33,11 @@ ENV APP_DEBUG=0
 #   SUPABASE_BUCKET=
 #   SUPABASE_PUBLIC_URL=
 #     (all six required for photo drag-and-drop; leave unset to hide the uploader)
+#   DROPBOX_APP_KEY=
+#   DROPBOX_APP_SECRET=
+#   DROPBOX_REFRESH_TOKEN=
+#   DROPBOX_FOLDER=/SupportTickets
+#     (all four required for support-ticket upload; leave unset to show "Dropbox is not configured")
 ENV APP_SECRET=build-time-placeholder
 ENV DATABASE_URL="postgresql://app:app@127.0.0.1:5432/app?serverVersion=18.0.0&charset=utf8"
 

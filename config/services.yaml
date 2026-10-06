@@ -19,6 +19,10 @@ parameters:
     env(SALESFORCE_USERNAME): ''
     env(SALESFORCE_PASSWORD): ''
     env(ODOO_EXPORT_TOKEN): ''
+    env(DROPBOX_APP_KEY): ''
+    env(DROPBOX_APP_SECRET): ''
+    env(DROPBOX_REFRESH_TOKEN): ''
+    env(DROPBOX_FOLDER): '/SupportTickets'
 
 services:
     # default configuration for services in *this* file
